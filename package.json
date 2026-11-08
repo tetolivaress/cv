@@ -15,9 +15,9 @@
     "screenshots": "playwright test tests/screenshots.spec.ts",
     "test": "playwright test"
   },
-  "packageManager": "pnpm@11.13.0",
+  "packageManager": "pnpm@11.28.9",
   "engines": {
-    "node": ">=22"
+    "node": "22.x || 24.x"
   },
   "dependencies": {
     "@phosphor-icons/react": "2.1.10",
