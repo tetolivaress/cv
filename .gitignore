@@ -1,0 +1,19 @@
+node_modules
+.next
+out
+next-env.d.ts
+*.tsbuildinfo
+.DS_Store
+.vercel
+.env*.local
+
+# Generated at build time (pnpm assets)
+public/_img
+public/cv.pdf
+public/Jesus-Olivares-CV.pdf
+
+# Test output
+test-results
+playwright-report
+lighthouse
+screenshots

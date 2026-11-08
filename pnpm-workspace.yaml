@@ -1,0 +1,7 @@
+# Dependencies allowed to run their install scripts; pnpm 10+ blocks the rest.
+allowBuilds:
+  esbuild: true
+  # sharp and Tailwind ship prebuilt binaries through optional dependencies.
+  sharp: false
+  "@tailwindcss/oxide": false
+  unrs-resolver: false

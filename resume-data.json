@@ -1,0 +1,214 @@
+{
+  "_notes": "Single source of truth for the website AND the PDF. Fields marked TODO need your input. Merged from the 2024 English CV and the older Spanish CV.",
+  "person": {
+    "name": "Jesús Olivares",
+    "title": "Full-Stack Developer · React & React Native",
+    "tagline": "10 years building web and mobile products — from Laravel, Vue and jQuery to React, React Native, Next.js and NestJS.",
+    "location": "Chacao, Caracas, Venezuela",
+    "email": "tetolivares@gmail.com",
+    "links": {
+      "linkedin": "https://www.linkedin.com/in/frontend-jesus-olivares",
+      "github": "https://github.com/tetolivaress",
+      "telegram": "https://t.me/caribote",
+      "youtube": "TODO: your YouTube channel URL"
+    },
+    "languages": [
+      { "name": "Spanish", "level": "Native" },
+      { "name": "English", "level": "B2 (certified)" }
+    ],
+    "summary": "Software developer with 10 years of experience across web and mobile. Started full-stack with PHP, Laravel, Vue and jQuery, specialized in React and React Native, and now ships full-stack products with Next.js, NestJS and AI-assisted workflows. Strong UI/UX background: able to design, build and deploy a product end to end."
+  },
+  "experience": [
+    {
+      "company": "Boxia",
+      "role": "Frontend Developer",
+      "start": "TODO",
+      "end": "Present",
+      "remote": true,
+      "highlights": [
+        "Maintain and expand product features with minimal design guidelines.",
+        "Use a UI/UX background to solve responsive design problems independently."
+      ],
+      "stack": ["React", "TypeScript", "TailwindCSS"]
+    },
+    {
+      "company": "Labarra360",
+      "role": "Frontend Developer",
+      "start": "2022",
+      "end": "2022",
+      "highlights": ["Built a back-office application."],
+      "stack": ["React"]
+    },
+    {
+      "company": "TODO: client name",
+      "role": "Frontend Developer",
+      "start": "TODO",
+      "end": "TODO",
+      "highlights": ["Built a platform to manage SEO texts for an e-commerce platform."],
+      "stack": ["React"]
+    },
+    {
+      "company": "Mercately",
+      "role": "Frontend Developer",
+      "start": "2021-05",
+      "end": "2021-09",
+      "highlights": [
+        "Built the front end of a messaging hub that centralizes MercadoLibre, Instagram and WhatsApp chats.",
+        "Maintained and added features to the React Native app for Android and iOS.",
+        "Used Redux extensively for state management."
+      ],
+      "stack": ["React", "React Native", "Redux", "Bootstrap"]
+    },
+    {
+      "company": "API Trips",
+      "role": "Node.js Developer",
+      "start": "2020-03",
+      "end": "2020-04",
+      "highlights": [
+        "Built a REST API and designed the MySQL database.",
+        "Implemented the authentication flow with Passport.js."
+      ],
+      "stack": ["Node.js", "Express", "MySQL", "Passport.js"]
+    },
+    {
+      "company": "Yotalis",
+      "role": "Software Architect (Laravel · React · Vue)",
+      "start": "2018-10",
+      "end": "2021-04",
+      "remote": true,
+      "highlights": [
+        "Full-stack developer, team lead, UI designer and product manager.",
+        "Designed an e-commerce platform's UI/UX in Adobe XD and built it with Laravel, Vue and React.",
+        "Introduced end-to-end testing with Cypress."
+      ],
+      "stack": ["Laravel", "Vue.js", "React", "Sass", "MySQL", "Adobe XD", "Cypress"]
+    },
+    {
+      "company": "AthenaUp / AthenaCryptoBank",
+      "role": "Full-Stack Developer",
+      "start": "2018-05",
+      "end": "2018-09",
+      "highlights": [
+        "Built a single-page application with AngularJS, PHP and MySQL.",
+        "Built the landing page with HTML, CSS and jQuery."
+      ],
+      "stack": ["AngularJS", "PHP", "MySQL", "Bootstrap", "jQuery"]
+    },
+    {
+      "company": "Ministerio de Economía y Finanzas (Venezuela)",
+      "role": "Full-Stack Developer & Laravel Trainer",
+      "start": "2017-01",
+      "end": "2018-05",
+      "highlights": [
+        "Built a call-center system with PHP, jQuery, Bootstrap, mPDF and PostgreSQL.",
+        "Built an asset-loan management system with PHP, PostgreSQL and JasperReports.",
+        "Trained developers in Laravel and maintained internal systems."
+      ],
+      "stack": ["PHP", "Laravel", "jQuery", "Bootstrap", "PostgreSQL", "JasperReports"]
+    },
+    {
+      "company": "TODO: first company",
+      "role": "Full-Stack Developer",
+      "start": "2016",
+      "end": "2017",
+      "highlights": ["Developed and maintained web applications with PHP, Bootstrap, CSS, JavaScript and jQuery."],
+      "stack": ["PHP", "JavaScript", "jQuery", "Bootstrap", "CSS"]
+    }
+  ],
+  "projects": [
+    {
+      "slug": "caribito",
+      "name": "Caribito",
+      "url": "https://caribito.com",
+      "summary": "Venezuelan tourism marketplace that connects trip operators with travelers.",
+      "role": "Founder · full-stack developer",
+      "stack": ["TODO"],
+      "videos": [{ "title": "TODO", "youtubeId": "TODO" }],
+      "images": []
+    },
+    {
+      "slug": "tutrainer",
+      "name": "TuTrainer",
+      "url": "https://tutrainer.com",
+      "summary": "App for personal trainers to track every client's progress.",
+      "role": "Founder · full-stack developer",
+      "stack": ["Next.js", "NestJS", "TypeScript"],
+      "videos": [{ "title": "TODO", "youtubeId": "TODO" }],
+      "images": []
+    },
+    {
+      "slug": "daniela-cucine",
+      "name": "Daniela Cucine",
+      "url": "https://danielacucine.com",
+      "summary": "TODO: one-line description",
+      "role": "TODO",
+      "stack": ["TODO"],
+      "videos": [],
+      "images": []
+    },
+    {
+      "slug": "zivave",
+      "name": "Zivave",
+      "url": "https://www.zivave.com",
+      "summary": "TODO: one-line description",
+      "role": "TODO",
+      "stack": ["TODO"],
+      "videos": [],
+      "images": []
+    },
+    {
+      "slug": "reactool",
+      "name": "Reactool",
+      "url": "https://reactool.app",
+      "summary": "TODO: one-line description",
+      "role": "TODO",
+      "stack": ["React"],
+      "videos": [],
+      "images": []
+    }
+  ],
+  "skills": {
+    "Frontend": ["React", "Next.js", "Redux / Redux Toolkit", "React Query", "Context API", "Vue.js", "Nuxt", "Quasar", "AngularJS", "TailwindCSS", "Sass", "Bootstrap", "Three.js / React Three Fiber"],
+    "Mobile": ["React Native"],
+    "Backend": ["Node.js", "NestJS", "Express", "PHP", "Laravel", "REST APIs", "OAuth / Passport.js"],
+    "Databases": ["PostgreSQL", "MySQL", "MongoDB", "Redis"],
+    "Languages": ["TypeScript", "JavaScript (ES6+)", "PHP", "SQL"],
+    "Testing": ["Jest", "React Testing Library", "Cypress"],
+    "Tools": ["Git", "Webpack", "Vercel", "Claude Code", "Pencil.dev", "Adobe XD"],
+    "Practices": ["UI/UX design", "Agile", "SOLID", "Software architecture", "Microfrontends (learning)"]
+  },
+  "education": [
+    {
+      "degree": "Systems Engineer",
+      "school": "Universidad Nacional Experimental Politécnica de la Fuerza Armada Nacional (UNEFA)",
+      "year": "2018"
+    }
+  ],
+  "certifications": [
+    { "category": "English", "name": "English B2 certification", "issuer": "Slang App", "date": "TODO", "credentialUrl": "", "image": "" },
+    { "category": "English", "name": "English B2 certification", "issuer": "ZentaGroup", "date": "TODO", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "Frontend Architecture career", "issuer": "Platzi", "date": "TODO", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "Vue.js career", "issuer": "Platzi", "date": "TODO", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "Backend Development with PHP career", "issuer": "Platzi", "date": "TODO", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "Master in JavaScript", "issuer": "Udemy", "date": "TODO", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "Advanced Vue.js and Firebase", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "Professional Vue.js", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "React.js", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "Node.js", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "Express.js", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "PHP with Laravel", "issuer": "Platzi", "date": "2017", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "Advanced PHP", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "ECMAScript 6+", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "Webpack 4", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "Angular 4", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "Ionic (basic)", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Development", "name": "Flutter / Dart", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Data", "name": "Database Fundamentals", "issuer": "Platzi", "date": "2017", "credentialUrl": "", "image": "" },
+    { "category": "Data", "name": "SQL and MySQL", "issuer": "Platzi", "date": "2016", "credentialUrl": "", "image": "" },
+    { "category": "Data", "name": "MongoDB and Redis", "issuer": "Platzi", "date": "2017", "credentialUrl": "", "image": "" },
+    { "category": "Other", "name": "Professional Git and GitHub", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Other", "name": "Introduction to Agile Methodologies", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Other", "name": "Leadership for Work Teams", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" },
+    { "category": "Other", "name": "Adobe XD", "issuer": "Platzi", "date": "", "credentialUrl": "", "image": "" }
+  ]
+}

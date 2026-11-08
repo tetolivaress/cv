@@ -1,0 +1,245 @@
+@import "tailwindcss";
+
+/* Dark mode follows the data-theme attribute set by the inline script in layout.tsx. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ───────────── Design tokens (Pencil "Design System" variables) ─────────────
+   Values match design.pen. Three tokens are nudged darker/lighter than the
+   design so small text passes WCAG AA: --text-tertiary (light + dark) and
+   --accent-strong (light). */
+:root {
+  color-scheme: light;
+  --bg: #f6f7f6;
+  --surface: #ffffff;
+  --surface-2: #edf1ef;
+  --border: #dfe5e2;
+  --border-strong: #c5cfca;
+  --text-primary: #0d1412;
+  --text-secondary: #4a5853;
+  --text-tertiary: #5f6d68; /* design: #6F7D78 */
+  --accent: #3ddcb4;
+  --accent-hover: #2fc9a2;
+  --accent-strong: #08735a; /* design: #0B7F62 */
+  --accent-soft: #ddf7ef;
+  --on-accent: #03140f;
+  --overlay: #0d141299;
+  --inverse: #0d1412;
+  --on-inverse: #f6f7f6;
+  --panel: #0d1412;
+  --on-panel: #f2f6f4;
+  --on-panel-muted: #a5b3ae;
+  --panel-border: #ffffff24;
+  --shadow-card: 0 12px 32px #0d14121f;
+  --shadow-modal: 0 24px 80px #0d141240;
+  --glow: #3ddcb4;
+
+  /* Layout: side gutters follow the design's breakpoints exactly. */
+  --gutter: 16px;
+  --content-max: 1280px;
+  --header-h: 64px;
+
+  /* Fluid type and spacing (design values at 393 / 820 / 1180 / 1440 px). */
+  --fs-display: clamp(40px, 1.81rem + 3.82vw, 84px);
+  --fs-h2: clamp(32px, 1.5rem + 2.03vw, 48px);
+  --fs-contact: clamp(40px, 1.5rem + 4.07vw, 72px);
+  --fs-hero-title: clamp(20px, 1.0625rem + 0.762vw, 26px);
+  --fs-lede: clamp(16px, 0.885rem + 0.468vw, 18px);
+  --fs-summary: clamp(16px, 0.8275rem + 0.7vw, 19px);
+  --fs-stat: clamp(40px, 2.22rem + 1.146vw, 52px);
+  --space-section: clamp(64px, 2.25rem + 7.12vw, 120px);
+  --space-hero-top: clamp(32px, 8.13vw, 96px);
+  --space-hero-bottom: clamp(48px, 1rem + 8.13vw, 112px);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0a0e0d;
+  --surface: #111715;
+  --surface-2: #18201d;
+  --border: #25302c;
+  --border-strong: #3a4743;
+  --text-primary: #ecf2ef;
+  --text-secondary: #a5b3ae;
+  --text-tertiary: #83918c; /* design: #76847F */
+  --accent-hover: #5be6c3;
+  --accent-strong: #3ddcb4;
+  --accent-soft: #0e2b24;
+  --overlay: #000000b3;
+  --inverse: #ecf2ef;
+  --on-inverse: #0a0e0d;
+  --panel: #111a17;
+  --shadow-card: 0 12px 32px #00000066;
+  --shadow-modal: 0 24px 80px #00000080;
+}
+
+@media (min-width: 375px) {
+  :root { --gutter: 20px; }
+}
+@media (min-width: 768px) {
+  :root { --gutter: 40px; }
+}
+@media (min-width: 1024px) {
+  :root { --gutter: 48px; --header-h: 76px; }
+}
+@media (min-width: 1440px) {
+  :root { --gutter: 120px; }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-fg: var(--text-primary);
+  --color-fg-2: var(--text-secondary);
+  --color-fg-3: var(--text-tertiary);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-overlay: var(--overlay);
+  --color-inverse: var(--inverse);
+  --color-on-inverse: var(--on-inverse);
+  --color-panel: var(--panel);
+  --color-on-panel: var(--on-panel);
+  --color-on-panel-muted: var(--on-panel-muted);
+  --color-panel-line: var(--panel-border);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --text-display: var(--fs-display);
+  --text-h2: var(--fs-h2);
+  --text-contact: var(--fs-contact);
+  --text-hero-title: var(--fs-hero-title);
+  --text-lede: var(--fs-lede);
+  --text-summary: var(--fs-summary);
+  --text-stat: var(--fs-stat);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-modal: var(--shadow-modal);
+
+  --breakpoint-wide: 90rem; /* 1440px */
+  --breakpoint-3xl: 120rem; /* 1920px */
+}
+
+/* ───────────── Base (layered, so utilities like outline-none still win) ───────────── */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: var(--header-h);
+    background: var(--bg);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+
+  body {
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent-strong);
+    outline-offset: 2px;
+  }
+
+  .on-panel :focus-visible,
+  .on-dark :focus-visible {
+    outline-color: var(--accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ───────────── Layout helpers ───────────── */
+@utility wrap {
+  width: 100%;
+  max-width: calc(var(--content-max) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-left: max(var(--gutter), env(safe-area-inset-left));
+  padding-right: max(var(--gutter), env(safe-area-inset-right));
+}
+
+/* Projects grow to 4 columns on very wide screens (design: 1760px at 3440). */
+@utility wrap-wide {
+  @media (min-width: 1920px) {
+    --content-max: 1760px;
+  }
+}
+
+@utility section-y {
+  padding-block: var(--space-section);
+}
+
+/* Keep long-form text at a comfortable line length on ultrawide screens. */
+@utility measure {
+  max-width: 68ch;
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Radix dialogs: fade/slide in, respecting reduced motion (handled globally above). */
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+@keyframes sheet-in {
+  from { opacity: 0; transform: translateY(16px); }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+}
+@utility animate-fade-in {
+  animation: fade-in 160ms ease-out;
+}
+@utility animate-sheet-in {
+  animation: sheet-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@utility animate-pop-in {
+  animation: pop-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ───────────── Inter Tight, emulated ─────────────
+   The design's heading face, Inter Tight, is Inter with tighter spacing:
+   measured at 0.0377em less per glyph at weight 600 and 0.043em at 500.
+   Applying that on top of each heading's own tracking reproduces it with the
+   Inter file the page already loads. */
+@layer utilities {
+  .font-heading {
+    --heading-tight: -0.0377em;
+    letter-spacing: calc(var(--tw-tracking, 0em) + var(--heading-tight));
+  }
+  .font-heading.font-medium {
+    --heading-tight: -0.043em;
+  }
+}
+

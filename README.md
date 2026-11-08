@@ -1,0 +1,188 @@
+# Jesús Olivares — online CV & portfolio
+
+One-page CV, project pages with YouTube tutorials, a searchable certifications gallery, and a downloadable **ATS-friendly PDF**. It's built from the Pencil design in `design.pen` and statically exported for Vercel.
+
+- **Stack:** Next.js 16 (App Router, `output: "export"`), React 19, TypeScript, Tailwind CSS 4, Radix Dialog, `@react-pdf/renderer`, Playwright + axe-core.
+- **Single source of truth:** `src/content/resume.ts`. The website **and** the PDF read from it.
+
+## Commands
+
+```bash
+pnpm install          # once
+pnpm dev              # http://localhost:3000 (also regenerates the PDF and image variants)
+pnpm build            # static site in ./out (prebuild: PDF + images)
+pnpm start            # serve ./out on http://localhost:3000
+pnpm cv               # rebuild only the PDF
+pnpm typecheck
+pnpm test             # all Playwright tests against ./out (run `pnpm build` first)
+pnpm screenshots      # responsive screenshots → ./screenshots
+```
+
+The first Playwright run needs `npx playwright install chromium`.
+
+## Editing content
+
+Everything visible on the site lives in **`src/content/resume.ts`**: data *and* UI copy, so components never hard-code text. Edit that file, then run `pnpm dev` or `pnpm build`.
+
+> **Empty or `TODO` values are skipped automatically**, on the site and in the PDF. Each build prints a yellow list of the fields that were skipped, so you know what is still missing.
+
+### Add a job
+
+Add an object to `experience` (newest first):
+
+```ts
+{
+  company: "Acme",
+  role: "Senior Frontend Developer",
+  start: "2025-02",        // "YYYY" or "YYYY-MM"
+  end: "Present",          // or "2026-01"
+  remote: true,
+  era: "04",               // which era header it appears under (see `eras`)
+  highlights: ["What you did, with impact.", "Up to 3 show in the PDF."],
+  stack: ["React", "TypeScript"],
+},
+```
+
+Durations ("2 yrs 7 mos") are computed from the dates. To start a new stack era, add it to the top of `eras`.
+
+### Add a project
+
+1. Add an object to `projects`. The `slug` becomes the URL (`/projects/<slug>`):
+
+   ```ts
+   {
+     slug: "my-app",
+     name: "My App",
+     url: "https://my-app.com",
+     summary: "One line for cards and the PDF.",
+     description: "Optional longer text for the project page.",
+     role: "Founder · full-stack developer",
+     dates: "Mar 2024 — Present",          // optional
+     platform: "iOS · Android · Web",      // optional
+     stack: ["Next.js", "NestJS"],
+     cover: "/projects/my-app/cover.png",
+     videos: [],
+     images: [],
+     // story: { problem: {title, text}, solution: {title, text}, result: {title, text, metrics: [{ value: "3×", label: "Faster" }]} },
+   },
+   ```
+
+2. Put the cover in `public/projects/my-app/cover.png` (any size ≥ 1600 px wide; WebP variants are generated at build time).
+
+The page, the sitemap entry, the previous/next links and the PDF line are all generated from that object.
+
+### Add a YouTube tutorial
+
+Add it to the project's `videos` array:
+
+```ts
+videos: [{ title: "Tour: booking in 2 minutes", youtubeId: "dQw4w9WgXcQ", duration: "4:12" }],
+```
+
+`youtubeId` is the part after `v=` in the YouTube URL. The card shows "N tutorials", the "Watch tutorial" button appears, and the project page gets a player with a playlist. The YouTube iframe only loads after the visitor clicks play.
+
+### Add screenshots to a project
+
+Copy the images to `public/projects/<slug>/` and list them:
+
+```ts
+images: [{ src: "/projects/my-app/checkout.png", alt: "Checkout screen" }],
+```
+
+### Add a certification
+
+1. Add an object to `certifications`:
+
+   ```ts
+   { category: "Development", name: "Next.js App Router", issuer: "Udemy", date: "2025-06",
+     credentialUrl: "https://…", image: "/certificates/nextjs-app-router.jpg", featured: false },
+   ```
+
+   - `category` is one of `English`, `Development`, `Data`, `Other` (these are the filter chips).
+   - `featured: true` shows it on the home page and in the PDF (keep about 4).
+   - Without an `image`, a styled certificate placeholder is shown instead.
+
+2. Optionally drop the image in `public/certificates/`.
+
+A new issuer gets a grey badge. Give it a color and initial in `issuers`.
+
+### Other things you might change
+
+| What | Where |
+| --- | --- |
+| Name, title, tagline, email, links, languages, summary | `person` in `resume.ts` |
+| Profile photo | `public/images/profile.png` (+ `person.photoFocus` to choose the crop) |
+| Skills | `skills` |
+| Section titles, buttons and every label | `site.sections`, `site.ui` |
+| PDF page size (A4 / Letter) and file name | `site.pdf` |
+| Production URL | Detected on Vercel. Override with the `NEXT_PUBLIC_SITE_URL` env var or `site.url` |
+
+## How it works
+
+```
+src/
+  content/
+    resume.ts        ← raw data + copy (edit this)
+    index.ts         ← cleans TODO/empty values, derives stats, dates, warnings
+    types.ts
+  app/               ← routes: /, /projects/[slug], sitemap.xml, robots.txt, og.png, apple-touch-icon.png
+  components/        ← Header, Hero, Timeline, TimelineItem, ProjectCard, VideoEmbed, SkillGroup,
+                       CertModal, CertCard, Footer, … (one per Pencil component)
+  lib/               ← theme, site URL, image loader
+scripts/
+  build-cv.tsx       ← PDF generator + content warnings (runs before dev/build)
+  optimize-images.ts ← WebP variants for next/image (static export has no image server)
+tests/               ← Playwright: e2e, axe accessibility, responsive screenshots
+```
+
+### PDF CV
+
+`scripts/build-cv.tsx` renders `public/Jesus-Olivares-CV.pdf` (plus `public/cv.pdf`) with `@react-pdf/renderer`. It's a single column with standard Helvetica and real selectable text. There's no photo, skill bars or icons, and every URL is written out in full and clickable. Sections, in order: Header, Summary, Experience, Projects, Skills, Education, Certifications ("N more at <site>/?certs=all") and Languages.
+
+After rendering, the script re-reads the PDF with pdf.js and **fails the build** if any of these checks fails:
+
+- it is 2 pages or fewer;
+- every project URL appears as text;
+- every project URL is a clickable link.
+
+The Download buttons are plain `<a download>` links, so they work instantly, including on iOS Safari.
+
+### Certifications modal
+
+The modal has filter chips, a search box and a lightbox with keyboard arrows. It's a full-screen sheet on phones and a centered modal (max 1100 px) from 768 px up. Radix handles the focus trap, Esc to close, the body scroll lock and `aria-labelledby`. The URL stays in sync, so `/?certs=english` opens the modal already filtered.
+
+### Theme
+
+Light and dark tokens come from the Pencil variables (`src/app/globals.css`). The theme defaults to the system preference and a manual choice is saved in `localStorage`. An inline script applies it before the first paint, so the page never flashes the wrong theme.
+
+### Design notes and deliberate deviations
+
+- **Breakpoints and gutters** match the Pencil frames: 16 / 20 / 40 / 48 / 120 px. Content is capped at 1280 px; the project grid widens to 1760 px with 4 columns from 1920 px. Fluid type and section spacing use `clamp()`.
+- **Contrast:** three tokens are a touch darker/lighter than the design so all small text passes WCAG AA: `--text-tertiary` (light and dark) and `--accent-strong` (light). In dark mode the logo monogram is inverted (accent background) for the same reason.
+- **Inter Tight:** headings use Inter with the exact extra negative tracking that Inter Tight applies (−0.0377 em at 600, −0.043 em at 500, measured in the browser). The result looks the same, and the page avoids a second 44 KB font, which keeps mobile Lighthouse ≥ 95 on project pages.
+- **Projects at 1920 px:** the brief asks for 4 columns from 1920 px. The design shows 3 at 1920 and 4 at 3440, so the 3440 layout is used from 1920 up.
+- **No fake player controls:** the video facade shows the title and play button only. YouTube's real controls appear once it loads.
+
+## Quality checks
+
+| Check | Result |
+| --- | --- |
+| Lighthouse mobile, home | Performance 100 · Accessibility 100 · Best Practices 100 · SEO 100 |
+| Lighthouse mobile, project pages | 95 · 100 · 100 · 100 (LCP is the cover image) |
+| Lighthouse desktop, all pages | 100 · 100 · 100 · 100 |
+| axe-core WCAG 2.1 AA | 0 violations: home, project, modal, lightbox, menu; light and dark; 393 px and 1440 px |
+| Responsive | 17 viewports (360 → 3440, portrait and landscape), no horizontal overflow; screenshots in `./screenshots` |
+| PDF | 2 pages A4, selectable text, all links clickable |
+
+Lighthouse was measured locally against `pnpm start`, in both color schemes, with:
+
+```bash
+npx lighthouse http://localhost:3000/projects/caribito --view                  # mobile
+npx lighthouse http://localhost:3000/ --preset=desktop --view                  # desktop
+```
+
+## Deploying to Vercel
+
+Import the repo in Vercel (framework preset: Next.js) or run `vercel`. No settings are needed. `pnpm build` runs the PDF and image scripts first, and the production domain is picked up from `VERCEL_PROJECT_PRODUCTION_URL`. That domain is used for canonical URLs, the sitemap, JSON-LD and the portfolio link in the PDF. If you use a custom domain, set `NEXT_PUBLIC_SITE_URL=https://your-domain.com` so previews also print it.
+
+`resume-data.json` is the original data export. `src/content/resume.ts` replaced it, so the JSON can be deleted.
