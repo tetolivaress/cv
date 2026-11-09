@@ -71,6 +71,15 @@ export interface RawEra {
   to: string;
 }
 
+/** A client or project inside one employer (e.g. a consultancy's client), newest first. */
+export interface RawExperienceProject {
+  name: L<string>;
+  start?: DateValue;
+  end?: DateValue;
+  highlights: L<string[]>;
+  stack?: string[];
+}
+
 export interface RawExperience {
   company?: string;
   role: L<string>;
@@ -78,8 +87,14 @@ export interface RawExperience {
   end?: DateValue;
   remote?: boolean;
   era: string;
+  /** May be empty when `projects` carries the bullets. */
   highlights: L<string[]>;
+  /**
+   * With `projects`, this list is not shown on the card (each project shows its own);
+   * it still feeds the hero "Currently at" badge (first 3 tags).
+   */
   stack: string[];
+  projects?: RawExperienceProject[];
 }
 
 export interface RawVideo {
@@ -173,6 +188,14 @@ export interface Era {
   to: string;
 }
 
+export interface ExperienceProject {
+  name: string;
+  start?: DateValue;
+  end?: DateValue;
+  highlights: string[];
+  stack: string[];
+}
+
 export interface Experience {
   company?: string;
   role: string;
@@ -182,6 +205,7 @@ export interface Experience {
   era: string;
   highlights: string[];
   stack: string[];
+  projects: ExperienceProject[];
 }
 
 export interface Video {

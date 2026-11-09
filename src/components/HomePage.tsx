@@ -2,6 +2,7 @@ import type { Locale } from "@/i18n/config";
 import { homePath, type SectionKey } from "@/i18n/routes";
 import { About } from "./About";
 import { Education } from "./Education";
+import { English } from "./English";
 import { Evolution } from "./Evolution";
 import { Experience } from "./Experience";
 import { Hero } from "./Hero";
@@ -22,6 +23,7 @@ export function HomePage({ locale, section }: { locale: Locale; section?: Sectio
       <Projects locale={locale} />
       <Skills locale={locale} />
       <Education locale={locale} />
+      <English locale={locale} />
       <SideNav />
       <JsonLd locale={locale} />
     </PageShell>

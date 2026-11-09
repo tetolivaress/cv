@@ -7,7 +7,6 @@ import { ArrowGlyph } from "./ArrowGlyph";
 export function Evolution({ locale }: { locale: Locale }) {
   const { eras, ui } = getContent(locale);
   const ordered = [...eras].reverse();
-  const current = eras[0];
   return (
     <section aria-label={ui.stackEvolution} className="wrap">
       <p className="mb-3.5 font-mono text-xs uppercase text-fg-3">
@@ -17,7 +16,8 @@ export function Evolution({ locale }: { locale: Locale }) {
       </p>
       <ol className="flex flex-col border-y border-line md:flex-row">
         {ordered.map((era, i) => {
-          const isNow = era.id === current.id;
+          // Two eras can run to now at once (e.g. a job's stack and side products).
+          const isNow = era.to === "Now";
           return (
             <li
               key={era.id}

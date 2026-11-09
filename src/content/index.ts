@@ -78,6 +78,10 @@ function makeResolver(locale: Locale, warnings: Warnings) {
 
 const plain = (value: string | undefined) => (isMissing(value) ? undefined : value);
 
+/** True when a (possibly localized) list has at least one entry in some language. */
+const hasItems = (value: L<string[]> | undefined) =>
+  !!value && (Array.isArray(value) ? value.length > 0 : Object.values(value).some((items) => items.length > 0));
+
 // ───────────────────────── content per language ─────────────────────────
 
 function build(locale: Locale) {
@@ -133,6 +137,16 @@ function build(locale: Locale) {
     const end = plain(job.end);
     if (!start) warnings.add(`${label}: start date`, false);
     if (!end) warnings.add(`${label}: end date`, false);
+    const projects = (job.projects ?? []).map((p, j) => {
+      const where = `${label}: projects[${j}]`;
+      return {
+        name: text(p.name, `${where}.name`) ?? "",
+        start: plain(p.start),
+        end: plain(p.end),
+        highlights: list(p.highlights, `${where}.highlights`),
+        stack: list(p.stack ?? [], `${where}.stack`),
+      };
+    });
     return {
       company,
       role: text(job.role, `${label}: role`) ?? "",
@@ -140,8 +154,10 @@ function build(locale: Locale) {
       end,
       remote: job.remote,
       era: job.era,
-      highlights: list(job.highlights, `${label}: highlights`),
+      // An employer whose bullets all live in its projects has no highlights of its own.
+      highlights: projects.length && !hasItems(job.highlights) ? [] : list(job.highlights, `${label}: highlights`),
       stack: list(job.stack, `${label}: stack`),
+      projects,
     };
   });
 
@@ -216,17 +232,23 @@ function build(locale: Locale) {
     .sort((a, b) => sortKey(b.date) - sortKey(a.date) || a.order - b.order)
     .map(({ order: _order, ...cert }) => cert);
 
+  // The PDF and the hero stats count every certificate; on the site, English ones have their own section.
   const featuredCertifications = (() => {
     const featured = certifications.filter((cert) => cert.featured);
     return featured.length ? featured : certifications.slice(0, 4);
   })();
+  const englishCertifications = certifications.filter((cert) => cert.category === "English");
+  const galleryCertifications = certifications.filter((cert) => cert.category !== "English");
+  const galleryFeatured = (() => {
+    const featured = galleryCertifications.filter((cert) => cert.featured);
+    return featured.length ? featured : galleryCertifications.slice(0, 4);
+  })();
 
-  const certYears = certifications.map((cert) => parseDate(cert.date)?.year).filter((y): y is number => !!y);
-  const certYearRange = certYears.length
-    ? Math.min(...certYears) === Math.max(...certYears)
-      ? String(certYears[0])
-      : `${Math.min(...certYears)} — ${Math.max(...certYears)}`
-    : "";
+  const yearsOf = (certs: Certification[]) => certs.map((cert) => parseDate(cert.date)?.year).filter((y): y is number => !!y);
+  const yearRange = (years: number[]) =>
+    years.length ? (Math.min(...years) === Math.max(...years) ? String(years[0]) : `${Math.min(...years)} — ${Math.max(...years)}`) : "";
+  const certYearRange = yearRange(yearsOf(galleryCertifications));
+  const englishYearRange = yearRange(yearsOf(englishCertifications));
 
   const startYears = experience.map((job) => parseDate(job.start)?.year).filter((y): y is number => !!y);
   const careerStartYear = Math.min(...startYears);
@@ -256,9 +278,11 @@ function build(locale: Locale) {
             ? countWord(experience.length, locale)
             : key === "projects"
               ? countWord(projects.length, locale)
-              : certifications.length,
+              : key === "english"
+                ? englishCertifications.length
+                : galleryCertifications.length,
         videos: hasVideos ? ui.projectsVideosSuffix : "",
-        since: certYearRange.split(" — ")[0] || careerStartYear,
+        since: (key === "english" ? englishYearRange : certYearRange).split(" — ")[0] || careerStartYear,
       };
       return [
         key,
@@ -302,10 +326,14 @@ function build(locale: Locale) {
     education,
     certifications,
     featuredCertifications,
-    certCategories: (["English", "Development", "Data", "Other"] as CertCategory[]).filter((cat) =>
-      certifications.some((cert) => cert.category === cat),
+    galleryCertifications,
+    galleryFeatured,
+    englishCertifications,
+    certCategories: (["Development", "Data", "Other"] as CertCategory[]).filter((cat) =>
+      galleryCertifications.some((cert) => cert.category === cat),
     ),
     certYearRange,
+    englishYearRange,
     careerStartYear,
     yearsOfExperience,
     currentJob,

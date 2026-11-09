@@ -11,7 +11,8 @@ export function Timeline({ locale }: { locale: Locale }) {
       {eras.map((era) => {
         const jobs = experience.filter((job) => job.era === era.id);
         if (!jobs.length) return null;
-        const isNow = era.id === eras[0].id;
+        // Two eras can run to now at once (e.g. a job's stack and side products).
+        const isNow = era.to === "Now";
         return (
           <li key={era.id}>
             <div className="flex">

@@ -10,7 +10,7 @@ const sectionTop = (page: import("@playwright/test").Page, id: string) =>
 test("the Spanish home page is fully translated", async ({ page }) => {
   await page.goto("/es");
   await expect(page.locator("html")).toHaveAttribute("lang", "es");
-  await expect(page.getByRole("heading", { level: 2, name: "Diez años, cuatro etapas." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Diez años, cinco etapas." })).toBeVisible();
   await expect(page.getByRole("banner").getByRole("link", { name: "Experiencia" })).toHaveAttribute("href", "/es/experiencia");
   const download = page.getByRole("link", { name: "Descargar CV (PDF)" }).first();
   await expect(download).toHaveAttribute("href", "/Jesus-Olivares-CV-ES.pdf");

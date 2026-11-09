@@ -20,3 +20,7 @@ screenshots
 
 public/cv-es.pdf
 public/Jesus-Olivares-CV-ES.pdf
+
+# Original certificate files (one shows a national ID number); the published copies live in public/certificates
+/certifications/
+/slang/

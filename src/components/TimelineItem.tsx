@@ -14,6 +14,32 @@ function RemoteBadge({ label }: { label: string }) {
   );
 }
 
+function Bullets({ items }: { items: string[] }) {
+  if (!items.length) return null;
+  return (
+    <ul className="flex flex-col gap-2">
+      {items.map((item) => (
+        <li key={item} className="flex gap-2.5 text-base leading-6 text-fg-2">
+          <span aria-hidden="true" className="mt-[11px] h-0.5 w-2 shrink-0 bg-accent-strong" />
+          <span className="min-w-0 flex-1">{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function StackTags({ items, label }: { items: string[]; label: string }) {
+  return (
+    <ul className="flex flex-wrap gap-1.5" aria-label={label}>
+      {items.map((item) => (
+        <li key={item} className={tag}>
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /**
  * Pencil "TimelineItem": date column (≥768px) + rail dot + card. On phones the
  * dates move inside the card. The current role gets a filled, glowing dot.
@@ -56,23 +82,28 @@ export function TimelineItem({ job, locale }: { job: Experience; locale: Locale 
             <h3 className="font-heading text-xl font-semibold tracking-[-0.5px] text-fg md:text-[22px]">{title}</h3>
             {job.company && <p className="text-base font-medium text-fg-2">{job.role}</p>}
           </header>
-          {job.highlights.length > 0 && (
-            <ul className="flex flex-col gap-2">
-              {job.highlights.map((item) => (
-                <li key={item} className="flex gap-2.5 text-base leading-6 text-fg-2">
-                  <span aria-hidden="true" className="mt-[11px] h-0.5 w-2 shrink-0 bg-accent-strong" />
-                  <span className="min-w-0 flex-1">{item}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {job.stack.length > 0 && (
-            <ul className="flex flex-wrap gap-1.5" aria-label={ui.stackLabel}>
-              {job.stack.map((item) => (
-                <li key={item} className={tag}>
-                  {item}
-                </li>
-              ))}
+          <Bullets items={job.highlights} />
+          {job.stack.length > 0 && job.projects.length === 0 && <StackTags items={job.stack} label={ui.stackLabel} />}
+          {job.projects.length > 0 && (
+            <ul className="flex flex-col gap-3">
+              {job.projects.map((project) => {
+                const projectDates = formatYears(project.start, project.end, ui.present);
+                const projectDuration = formatDuration(project.start, project.end, locale);
+                return (
+                  <li key={project.name} className="flex flex-col gap-2.5 rounded-xl p-4 ring-1 ring-inset ring-line">
+                    <header className="flex flex-col gap-0.5">
+                      <h4 className="text-base font-semibold text-fg">{project.name}</h4>
+                      {projectDates && (
+                        <p className="font-mono text-[13px] text-fg-3">
+                          {[projectDates, projectDuration].filter(Boolean).join(" · ")}
+                        </p>
+                      )}
+                    </header>
+                    <Bullets items={project.highlights} />
+                    {project.stack.length > 0 && <StackTags items={project.stack} label={ui.stackLabel} />}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </article>

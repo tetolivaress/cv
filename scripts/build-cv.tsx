@@ -65,12 +65,17 @@ const s = StyleSheet.create({
   bulletDot: { width: 9, color: muted },
   bulletText: { flex: 1 },
   stack: { marginTop: 1.5, fontSize: 8.6, color: muted },
+  project: { marginTop: 3, marginLeft: 9 },
+  projectTitle: { fontFamily: "Helvetica", fontWeight: "bold", fontSize: 9.2, flexShrink: 1, paddingRight: 8 },
   line: { marginBottom: 2.5 },
   bold: { fontFamily: "Helvetica", fontWeight: "bold" },
   footer: { position: "absolute", bottom: 20, left: 42, right: 42, flexDirection: "row", justifyContent: "space-between", fontSize: 7.5, color: "#777777" },
 });
 
-const SEP = "  ·  ";
+/** Helvetica (the PDF's built-in font) has no arrow glyph: "→" would print as a stray quote. */
+const pdfSafe = (text: string) => text.replaceAll("→", "›");
+
+const SEP ="  ·  ";
 
 /** Section heading kept on the same page as its first entry (no orphaned headings). */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -150,19 +155,38 @@ function Cv({ c }: { c: Content }) {
           {c.experience.map((job, i) => {
             const heading = job.company ? `${job.role}, ${job.company}` : job.role;
             const dates = [formatMonths(job.start, job.end, ui.present, c.locale), job.remote ? ui.remote : ""].filter(Boolean).join(" · ");
+            const bullets = (items: string[], max = 3) =>
+              items.slice(0, max).map((item) => (
+                <View key={item} style={s.bullet}>
+                  <Text style={s.bulletDot}>•</Text>
+                  <Text style={s.bulletText}>{pdfSafe(item)}</Text>
+                </View>
+              ));
+            const hasProjects = job.projects.length > 0;
+            // An employer with several projects may span a page break; each project stays whole.
             return (
-              <View key={i} style={s.entry} wrap={false}>
-                <View style={s.row}>
+              <View key={i} style={s.entry} wrap={hasProjects}>
+                <View style={s.row} wrap={false}>
                   <Text style={s.entryTitle}>{heading}</Text>
                   {dates && <Text style={s.dates}>{dates}</Text>}
                 </View>
-                {job.highlights.slice(0, 3).map((item) => (
-                  <View key={item} style={s.bullet}>
-                    <Text style={s.bulletDot}>•</Text>
-                    <Text style={s.bulletText}>{item}</Text>
-                  </View>
-                ))}
-                {job.stack.length > 0 && <Text style={s.stack}>{job.stack.join(", ")}</Text>}
+                {bullets(job.highlights)}
+                {job.stack.length > 0 && !hasProjects && <Text style={s.stack}>{job.stack.join(", ")}</Text>}
+                {/* Two pages max: the current project keeps 2 bullets, earlier ones their first. */}
+                {job.projects.map((project, j) => {
+                  const projectDates = formatMonths(project.start, project.end, ui.present, c.locale);
+                  return (
+                    <View key={project.name} style={s.project} wrap={false}>
+                      <View style={s.row}>
+                        <Text style={s.projectTitle}>{project.name}</Text>
+                        {projectDates && <Text style={s.dates}>{projectDates}</Text>}
+                      </View>
+                      {bullets(project.highlights, j === 0 ? 2 : 1)}
+                    </View>
+                  );
+                })}
+                {/* One stack line for all of the employer's projects (deduplicated) keeps the PDF to two pages. */}
+                {hasProjects && <Text style={s.stack}>{[...new Set(job.projects.flatMap((p) => p.stack))].join(", ")}</Text>}
               </View>
             );
           })}
@@ -211,8 +235,13 @@ function Cv({ c }: { c: Content }) {
             <Text key={cert.key} style={s.line}>
               <Text style={s.bold}>{cert.name}</Text>, {cert.issuer}
               {cert.date ? ` (${cert.date.slice(0, 4)})` : ""}
-              {cert.credentialUrl ? "  " : ""}
-              {cert.credentialUrl ? <Url href={cert.credentialUrl} /> : null}
+              {/* A labelled link keeps each certificate on one line (credential URLs are long). */}
+              {cert.credentialUrl ? " · " : ""}
+              {cert.credentialUrl ? (
+                <Link src={cert.credentialUrl} style={s.link}>
+                  {pdf.credential}
+                </Link>
+              ) : null}
             </Text>
           ))}
           {otherCerts > 0 && (

@@ -18,7 +18,7 @@ test.describe("home", () => {
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1, name: "Jesús Olivares" })).toBeVisible();
-    for (const id of ["about", "experience", "projects", "skills", "certifications", "contact"]) {
+    for (const id of ["about", "experience", "projects", "skills", "certifications", "english", "contact"]) {
       await expect(page.locator(`#${id}`)).toBeAttached();
     }
     // TODO placeholders never reach the page.
@@ -126,7 +126,7 @@ test.describe("certifications modal", () => {
     // Body scroll is locked.
     await expect.poll(() => bodyOverflow(page)).toBe("hidden");
 
-    await expect(dialog.getByRole("article")).toHaveCount(25);
+    await expect(dialog.getByRole("article")).toHaveCount(48);
     await dialog.getByRole("button", { name: /^Data/ }).click();
     await expect(dialog.getByRole("article")).toHaveCount(3);
     await expect(page).toHaveURL(/\?certs=data/);
@@ -138,7 +138,7 @@ test.describe("certifications modal", () => {
     await dialog.getByRole("searchbox").fill("kubernetes");
     await expect(dialog.getByText("No certificates match “kubernetes”")).toBeVisible();
     await dialog.getByRole("button", { name: "Clear filters" }).click();
-    await expect(dialog.getByRole("article")).toHaveCount(25);
+    await expect(dialog.getByRole("article")).toHaveCount(48);
 
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
@@ -156,11 +156,26 @@ test.describe("certifications modal", () => {
   });
 
   test("deep link opens it already filtered", async ({ page }) => {
-    await page.goto("/?certs=english");
+    await page.goto("/?certs=data");
     const dialog = page.getByRole("dialog", { name: "Certifications" });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole("button", { name: /^English/ })).toHaveAttribute("aria-pressed", "true");
-    await expect(dialog.getByRole("article")).toHaveCount(2);
+    await expect(dialog.getByRole("button", { name: /^Data/ })).toHaveAttribute("aria-pressed", "true");
+    await expect(dialog.getByRole("article")).toHaveCount(3);
+    // English certificates live in their own section, not in this gallery.
+    await expect(dialog.getByRole("button", { name: /^English/ })).toHaveCount(0);
+  });
+
+  test("English certificates have their own section", async ({ page }) => {
+    await page.goto("/english");
+    const section = page.locator("#english");
+    await expect(section.getByRole("heading", { level: 2, name: "English, level by level." })).toBeVisible();
+    await expect(section.getByRole("article")).toHaveCount(20);
+    await section.getByRole("button", { name: /Enlarge certificate: General English · Advanced 3/ }).click();
+    const viewer = page.getByRole("dialog", { name: "Certificate viewer" });
+    await expect(viewer).toBeVisible();
+    await expect(viewer.getByText(/ \/ 20$/)).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(viewer).toBeHidden();
   });
 
   test("clicking a certificate image opens the lightbox", async ({ page }) => {

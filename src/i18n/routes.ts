@@ -5,7 +5,7 @@ import { defaultLocale, locales, type Locale } from "./config";
  * segments. The folders in src/app must match these names for "projects" and
  * "tutorials"; the other section slugs are served by a dynamic [section] route.
  */
-export const sectionKeys = ["about", "experience", "projects", "skills", "certifications", "contact"] as const;
+export const sectionKeys = ["about", "experience", "projects", "skills", "certifications", "english", "contact"] as const;
 export type SectionKey = (typeof sectionKeys)[number];
 
 export const sectionSlugs: Record<Locale, Record<SectionKey, string>> = {
@@ -15,6 +15,7 @@ export const sectionSlugs: Record<Locale, Record<SectionKey, string>> = {
     projects: "projects",
     skills: "skills",
     certifications: "certifications",
+    english: "english",
     contact: "contact",
   },
   es: {
@@ -23,6 +24,7 @@ export const sectionSlugs: Record<Locale, Record<SectionKey, string>> = {
     projects: "proyectos",
     skills: "habilidades",
     certifications: "certificaciones",
+    english: "ingles",
     contact: "contacto",
   },
 };

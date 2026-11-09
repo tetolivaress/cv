@@ -25,7 +25,7 @@ const en = {
     experience: {
       nav: "Experience",
       eyebrow: "Experience",
-      title: "Ten years, four eras.",
+      title: "Ten years, five eras.",
       description: "{count} roles, from PHP and jQuery to full-stack TypeScript. Newest first.",
     },
     projects: {
@@ -45,6 +45,12 @@ const en = {
       eyebrow: "Education & certifications",
       title: "Always learning.",
       description: "A systems engineering degree, plus {count} courses and certifications since {since}.",
+    },
+    english: {
+      nav: "English",
+      eyebrow: "English",
+      title: "English, level by level.",
+      description: "{count} certificates from my English classes since {since}: General English up to Advanced 3, plus courses for meetings, presentations and conversation.",
     },
     contact: {
       nav: "Contact",
@@ -169,6 +175,7 @@ const en = {
       certifications: "Certifications",
       languages: "Languages",
       moreCerts: "{n} more courses and certifications at",
+      credential: "credential",
       portfolio: "Portfolio",
       cv: "CV",
     },
@@ -188,7 +195,7 @@ const es: Copy = {
     experience: {
       nav: "Experiencia",
       eyebrow: "Experiencia",
-      title: "Diez años, cuatro etapas.",
+      title: "Diez años, cinco etapas.",
       description: "{count} puestos, de PHP y jQuery a TypeScript full-stack. Primero lo más reciente.",
     },
     projects: {
@@ -208,6 +215,12 @@ const es: Copy = {
       eyebrow: "Formación y certificaciones",
       title: "Siempre aprendiendo.",
       description: "Un título de Ingeniería de Sistemas y {count} cursos y certificaciones desde {since}.",
+    },
+    english: {
+      nav: "Inglés",
+      eyebrow: "Inglés",
+      title: "Inglés, nivel a nivel.",
+      description: "{count} certificados de mis clases de inglés desde {since}: inglés general hasta Advanced 3, más cursos de reuniones, presentaciones y conversación.",
     },
     contact: {
       nav: "Contacto",
@@ -332,6 +345,7 @@ const es: Copy = {
       certifications: "Certificaciones",
       languages: "Idiomas",
       moreCerts: "{n} cursos y certificaciones más en",
+      credential: "credencial",
       portfolio: "Portafolio",
       cv: "CV",
     },

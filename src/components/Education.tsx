@@ -65,8 +65,8 @@ export function Education({ locale }: { locale: Locale }) {
 
       <div className="mt-8 md:mt-12">
         <CertShowcase
-          certifications={c.certifications}
-          featured={c.featuredCertifications}
+          certifications={c.galleryCertifications}
+          featured={c.galleryFeatured}
           categories={c.certCategories}
           yearRange={c.certYearRange}
         />
