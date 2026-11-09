@@ -72,6 +72,28 @@ export const eras: RawEra[] = [
 /** Newest first. `era` must match one of the ids above. */
 export const experience: RawExperience[] = [
   {
+    company: "Zenta Group",
+    role: { en: "Frontend Developer", es: "Desarrollador Frontend" },
+    start: "2025-11",
+    end: "Present",
+    remote: true,
+    era: "04",
+    highlights: {
+      en: [
+        "Built a 5-step transport request wizard with Excel bulk import and a Google Maps route editor with draggable stops and batched geocoding.",
+        "Built a Leaflet route planner that renders ORS/VROOM routes, compares them with the client's route and lets users drag error points to fix them.",
+        "Exported planning PDFs with Leaflet map snapshots and scaled the planner to large requests with lazy per-service loading.",
+      ],
+      es: [
+        "Construí un asistente de 5 pasos para solicitudes de transporte con importación masiva desde Excel y un editor de rutas en Google Maps con paradas arrastrables y geocodificación por lotes.",
+        "Construí un planificador de rutas en Leaflet que muestra las rutas del optimizador ORS/VROOM, las compara con la ruta del cliente y permite arrastrar los puntos con error para corregirlos.",
+        "Exporté reportes PDF de la planeación con capturas del mapa de Leaflet y escalé el planificador a solicitudes grandes con carga diferida por servicio.",
+      ],
+    },
+    // The hero "Currently at" badge shows the first 3 tags on one line: keep them short (it overflows on tablets otherwise).
+    stack: ["Next.js", "TypeScript", "Leaflet", "TanStack Query", "React Hook Form", "Google Maps"],
+  },
+  {
     company: "Boxia",
     role: { en: "Frontend Developer", es: "Desarrollador Frontend" },
     start: "TODO",
