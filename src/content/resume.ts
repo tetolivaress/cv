@@ -50,8 +50,9 @@ export const person: RawPerson = {
     { name: { en: "Spanish", es: "Español" }, level: { en: "Native", es: "Nativo" }, cefr: "C2", native: true },
     {
       name: { en: "English", es: "Inglés" },
-      level: { en: "Upper intermediate", es: "Intermedio alto" },
-      cefr: "B2",
+      level: { en: "Advanced", es: "Avanzado" },
+      // As the latest diploma states it: Slang General English, Advanced 3 (level 15 of 16).
+      cefr: "Advanced 3",
       note: { en: "certified", es: "certificado" },
     },
   ],
@@ -142,41 +143,36 @@ export const experience: RawExperience[] = [
         stack: ["React", "TypeScript", "Material UI", "React Hook Form", "Yup", "Vite"],
       },
       {
+        name: { en: "CMPC: Boxia", es: "CMPC: Boxia" },
+        start: "2022-09",
+        end: "2025-08",
+        highlights: {
+          en: [
+            "Maintained and expanded product features with minimal design guidelines.",
+            "Used a UI/UX background to solve responsive design problems independently.",
+          ],
+          es: [
+            "Mantuve y amplié funcionalidades del producto con lineamientos de diseño mínimos.",
+            "Aproveché mi base en UI/UX para resolver problemas de diseño responsive de forma autónoma.",
+          ],
+        },
+        stack: ["React", "TypeScript", "TailwindCSS"],
+      },
+      {
         name: { en: "La Barra: back office", es: "La Barra: back office" },
         start: "2022-06",
         end: "2022-08",
         highlights: {
           en: [
             "Built the back-office application without a design to follow, and its UX/UI was recognized as a strength.",
-            "Built a separate app to manage the publications platform's SEO texts, with React, Redux and an Express.js backend.",
           ],
           es: [
             "Desarrollé la aplicación de back office sin un diseño previo, y su solución de UX/UI fue reconocida como un punto fuerte.",
-            "Desarrollé una aplicación aparte para gestionar los textos SEO de la plataforma de publicaciones, con React, Redux y un backend en Express.js.",
           ],
         },
-        stack: ["React", "Redux", "Express"],
+        stack: ["React"],
       },
     ],
-  },
-  {
-    company: "Boxia",
-    role: { en: "Frontend Developer", es: "Desarrollador Frontend" },
-    start: "2022-09",
-    end: "2025-08",
-    remote: true,
-    era: "04",
-    highlights: {
-      en: [
-        "Maintained and expanded product features with minimal design guidelines.",
-        "Used a UI/UX background to solve responsive design problems independently.",
-      ],
-      es: [
-        "Mantuve y amplié funcionalidades del producto con lineamientos de diseño mínimos.",
-        "Aproveché mi base en UI/UX para resolver problemas de diseño responsive de forma autónoma.",
-      ],
-    },
-    stack: ["React", "TypeScript", "TailwindCSS"],
   },
   {
     company: "Mercately",
@@ -223,15 +219,17 @@ export const experience: RawExperience[] = [
         "Designed an e-commerce platform's UI/UX in Adobe XD and built it with Laravel, Vue and React.",
         "Hired developers, designed the database and integrated a payment gateway, queues, transactional email APIs and Telegram.",
         "Introduced end-to-end testing with Cypress.",
+        "Built a separate app to manage the publications platform's SEO texts, with React, Redux and an Express.js backend.",
       ],
       es: [
         "Desarrollador full-stack, líder de equipo, diseñador UI y product manager.",
         "Diseñé la UI/UX de una plataforma de e-commerce en Adobe XD y la desarrollé con Laravel, Vue y React.",
         "Contraté desarrolladores, diseñé la base de datos e integré una pasarela de pagos, colas, APIs de correo transaccional y Telegram.",
         "Introduje pruebas end-to-end con Cypress.",
+        "Desarrollé una aplicación aparte para gestionar los textos SEO de la plataforma de publicaciones, con React, Redux y un backend en Express.js.",
       ],
     },
-    stack: ["Laravel", "Vue.js", "React", "Sass", "Bootstrap", "jQuery", "MySQL", "Adobe XD", "Cypress"],
+    stack: ["Laravel", "Vue.js", "React", "Redux", "Express", "Sass", "Bootstrap", "jQuery", "MySQL", "Adobe XD", "Cypress"],
   },
   {
     company: "AthenaUp / AthenaCryptoBank",
@@ -521,5 +519,5 @@ export const site = {
     pageSize: "A4" as "A4" | "LETTER",
   },
   /** Sections shown in the desktop header (About lives in the side/mobile menus). */
-  headerNav: ["experience", "projects", "skills", "certifications", "contact"] as SectionKey[],
+  headerNav: ["experience", "projects", "skills", "certifications", "english", "contact"] as SectionKey[],
 };

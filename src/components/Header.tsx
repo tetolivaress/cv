@@ -40,7 +40,8 @@ export function Header({ page }: { page: PageKind }) {
                     href={section.href}
                     aria-current={isActive ? "location" : undefined}
                     className={cn(
-                      "flex h-11 items-center whitespace-nowrap rounded-[10px] px-2.5 text-[15px] font-medium transition-colors duration-150 xl:px-3.5",
+                      // Six sections fit at 1024px (Spanish labels are the longest) with tighter padding until xl.
+                      "flex h-11 items-center whitespace-nowrap rounded-[10px] px-1.5 text-[15px] font-medium transition-colors duration-150 xl:px-3.5",
                       isActive ? "bg-surface-2 text-fg" : "text-fg-2 hover:text-fg",
                     )}
                   >

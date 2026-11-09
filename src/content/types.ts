@@ -35,7 +35,7 @@ export interface IssuerStyle {
 export interface RawLanguage {
   name: L<string>;
   level: L<string>;
-  /** CEFR code shown in the pill, e.g. "B2". */
+  /** Level shown in the pill: a CEFR code ("C2") or a certified level ("Advanced 3"). */
   cefr?: string;
   /** Mother tongue: shown as "Spanish native" instead of the CEFR code. */
   native?: boolean;
