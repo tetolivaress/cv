@@ -1,5 +1,6 @@
 import { ArrowUp } from "lucide-react";
 import { person, sections, t, ui } from "@/content";
+import { BackToTop } from "./BackToTop";
 import { CopyEmail } from "./CopyEmail";
 import { DownloadCv } from "./DownloadCv";
 import { SocialLinks } from "./SocialLinks";
@@ -46,10 +47,10 @@ export function Footer() {
           <p className="text-base text-on-panel-muted md:text-sm">
             {t(ui.footer, { year: new Date().getFullYear(), name: person.name })}
           </p>
-          <a href="#top" className="flex h-11 w-fit items-center gap-1.5 text-base font-medium text-on-panel hover:text-accent md:text-sm">
+          <BackToTop className="flex h-11 w-fit items-center gap-1.5 text-base font-medium text-on-panel hover:text-accent md:text-sm">
             {ui.backToTop}
             <ArrowUp size={16} aria-hidden="true" />
-          </a>
+          </BackToTop>
         </div>
       </div>
     </footer>

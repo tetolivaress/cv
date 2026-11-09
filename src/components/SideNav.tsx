@@ -3,6 +3,8 @@
 import { sectionOrder, sections } from "@/content";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { cn } from "@/lib/cn";
+import { homeSectionPath } from "@/lib/section-nav";
+import { SectionLink } from "./SectionLink";
 
 const ids = sectionOrder.map((key) => sections[key].id);
 
@@ -23,8 +25,9 @@ export function SideNav() {
           const isActive = active === section.id;
           return (
             <li key={key}>
-              <a
-                href={`#${section.id}`}
+              <SectionLink
+                section={section.id}
+                href={homeSectionPath(section.id)}
                 aria-current={isActive ? "location" : undefined}
                 className="group flex h-9 items-center gap-3"
               >
@@ -38,7 +41,7 @@ export function SideNav() {
                 <span className={cn("font-mono text-xs", isActive ? "text-fg" : "text-fg-3 group-hover:text-fg")}>
                   {section.index} {section.nav}
                 </span>
-              </a>
+              </SectionLink>
             </li>
           );
         })}

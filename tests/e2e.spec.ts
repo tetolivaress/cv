@@ -7,6 +7,10 @@ test.use({ reducedMotion: "reduce" });
 const bodyOverflow = (page: import("@playwright/test").Page) =>
   page.evaluate(() => getComputedStyle(document.body).overflowY);
 
+/** Distance from the top of the viewport to a section (≈ header height when scrolled to it). */
+const sectionTop = (page: import("@playwright/test").Page, id: string) =>
+  page.evaluate((target) => Math.round(document.getElementById(target)!.getBoundingClientRect().top), id);
+
 test.describe("home", () => {
   test("renders every section without console errors", async ({ page }) => {
     const errors: string[] = [];
@@ -95,7 +99,8 @@ test.describe("navigation", () => {
     await expect.poll(() => bodyOverflow(page)).toBe("hidden");
     await menu.getByRole("link", { name: /Projects/ }).click();
     await expect(menu).toBeHidden();
-    await expect(page).toHaveURL(/#projects$/);
+    await expect(page).toHaveURL(/\/projects$/);
+    await expect.poll(() => sectionTop(page, "projects")).toBeLessThan(80);
   });
 
   test("every project page is generated with prev/next links", async ({ page }) => {
@@ -214,6 +219,91 @@ test.describe("accessibility basics", () => {
     const skip = page.getByRole("link", { name: "Skip to content" });
     await expect(skip).toBeFocused();
     await skip.press("Enter");
-    await expect(page).toHaveURL(/#main$/);
+    await expect(page.locator("main")).toBeFocused();
+    expect(page.url()).not.toContain("#");
   });
 });
+
+test.describe("clean section URLs (no #)", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("header links scroll in place and update the address bar without reloading", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(() => ((window as unknown as { marker: number }).marker = 1));
+    await page.getByRole("banner").getByRole("link", { name: "Skills" }).click();
+    await expect(page).toHaveURL(/\/skills$/);
+    await expect.poll(() => sectionTop(page, "skills")).toBeLessThan(80);
+    expect(page.url()).not.toContain("#");
+    // Same document: no reload happened.
+    expect(await page.evaluate(() => (window as unknown as { marker?: number }).marker)).toBe(1);
+
+    await page.getByRole("banner").getByRole("link", { name: "Experience" }).click();
+    await expect(page).toHaveURL(/\/experience$/);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/skills$/);
+    await expect.poll(() => sectionTop(page, "skills")).toBeLessThan(80);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/$/);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(5);
+  });
+
+  for (const id of ["about", "experience", "projects", "skills", "certifications", "contact"]) {
+    test(`/${id} opens the home page at that section`, async ({ page }) => {
+      await page.goto(`/${id}`);
+      await expect(page.getByRole("heading", { level: 1, name: "Jesús Olivares" })).toBeAttached();
+      if (id === "contact") {
+        // The footer is the last block, so the page bottoms out before reaching the header line.
+        await expect.poll(() => page.evaluate(() => window.innerHeight + window.scrollY >= document.body.scrollHeight - 2)).toBe(true);
+      } else {
+        await expect.poll(() => sectionTop(page, id)).toBeLessThan(80);
+        await expect.poll(() => sectionTop(page, id)).toBeGreaterThan(60);
+      }
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /^https?:\/\/[^/]+\/?$/);
+    });
+  }
+
+  test("links from a project page go to the home sections", async ({ page }) => {
+    await page.goto("/projects/zivave");
+    await page.getByRole("link", { name: "All projects" }).click();
+    await expect(page).toHaveURL(/\/projects$/);
+    await expect.poll(() => sectionTop(page, "projects")).toBeLessThan(80);
+    await page.goto("/projects/zivave");
+    await page.getByRole("banner").getByRole("link", { name: "Contact" }).click();
+    await expect(page).toHaveURL(/\/contact$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Jesús Olivares" })).toBeAttached();
+  });
+
+  test("back to top and the logo reset the URL", async ({ page }) => {
+    await page.goto("/skills");
+    await expect.poll(() => sectionTop(page, "skills")).toBeLessThan(80);
+    await page.getByRole("link", { name: "Back to top" }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(5);
+
+    await page.goto("/projects/caribito");
+    await page.getByRole("link", { name: "Back to top" }).click();
+    await expect(page).toHaveURL(/\/projects\/caribito$/);
+    await page.getByRole("banner").getByRole("link", { name: /Jesús Olivares/ }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Jesús Olivares" })).toBeVisible();
+  });
+
+  test("certifications deep link still works on a section URL", async ({ page }) => {
+    await page.goto("/certifications?certs=data");
+    await expect(page.getByRole("dialog", { name: "Certifications" })).toBeVisible();
+    await expect(page.getByRole("dialog").getByRole("article")).toHaveCount(3);
+  });
+
+  test("no link on the site uses a # fragment", async ({ page }) => {
+    for (const path of ["/", "/projects/caribito"]) {
+      await page.goto(path);
+      const hashed = await page.evaluate(() =>
+        Array.from(document.querySelectorAll("a[href]"))
+          .map((a) => a.getAttribute("href")!)
+          .filter((href) => href.includes("#") && href !== "#main"),
+      );
+      expect(hashed).toEqual([]);
+    }
+  });
+});
+

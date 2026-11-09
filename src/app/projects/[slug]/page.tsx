@@ -1,12 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { Footer } from "@/components/Footer";
-import { PageShell } from "@/components/PageShell";
-import { ProjectGallery } from "@/components/ProjectGallery";
-import { ProjectHero } from "@/components/ProjectHero";
-import { ProjectNav } from "@/components/ProjectNav";
-import { ProjectStory } from "@/components/ProjectStory";
-import { ProjectTutorials } from "@/components/ProjectTutorials";
+import { ProjectPage } from "@/components/ProjectPage";
 import { getProject, person, projects } from "@/content";
 import { ogImage } from "@/lib/og";
 
@@ -37,22 +30,7 @@ export async function generateMetadata({ params }: PageProps<"/projects/[slug]">
   };
 }
 
-export default async function ProjectPage({ params }: PageProps<"/projects/[slug]">) {
+export default async function Page({ params }: PageProps<"/projects/[slug]">) {
   const { slug } = await params;
-  const found = getProject(slug);
-  if (!found) notFound();
-  const { project, index, previous, next } = found;
-
-  return (
-    <>
-      <PageShell onHome={false}>
-        <ProjectHero project={project} index={index} />
-        {project.videos.length > 0 && <ProjectTutorials project={project} />}
-        {project.images.length > 0 && <ProjectGallery project={project} />}
-        {project.story && <ProjectStory story={project.story} />}
-        {projects.length > 1 && <ProjectNav previous={previous} next={next} />}
-      </PageShell>
-      <Footer />
-    </>
-  );
+  return <ProjectPage slug={slug} />;
 }

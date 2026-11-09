@@ -9,7 +9,9 @@ import {
   ui,
   yearsOfExperience,
 } from "@/content";
+import { homeSectionPath } from "@/lib/section-nav";
 import { DownloadCv } from "./DownloadCv";
+import { SectionLink } from "./SectionLink";
 import { SocialLinks } from "./SocialLinks";
 import { badge, button } from "./ui";
 
@@ -92,10 +94,14 @@ export function Hero() {
           <div className="flex flex-col gap-4 pt-2 lg:flex-row lg:items-center lg:gap-3">
             <div className="flex flex-col gap-3 sm:flex-row">
               <DownloadCv className="w-full sm:w-auto" />
-              <a href={`#${sections.contact.id}`} className={`${button.secondary} w-full sm:w-auto`}>
+              <SectionLink
+                section={sections.contact.id}
+                href={homeSectionPath(sections.contact.id)}
+                className={`${button.secondary} w-full sm:w-auto`}
+              >
                 <Mail size={18} aria-hidden="true" />
                 {ui.contact}
-              </a>
+              </SectionLink>
             </div>
             <SocialLinks className="lg:border-l lg:border-line lg:pl-4" />
           </div>

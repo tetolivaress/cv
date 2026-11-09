@@ -1,10 +1,23 @@
-import Link from "next/link";
+import type { MouseEventHandler } from "react";
 import { person } from "@/content";
+import { TOP } from "@/lib/section-nav";
+import { SectionLink } from "./SectionLink";
 
-/** Pencil "Logo": monogram + name. The short name is used below 1280px. */
-export function Logo() {
+interface Props {
+  onClick?: MouseEventHandler<HTMLAnchorElement>;
+  onScrollInPlace?: () => void;
+}
+
+/** Pencil "Logo": monogram + name (short name below 1280px). Goes to the top of the home page. */
+export function Logo({ onClick, onScrollInPlace }: Props) {
   return (
-    <Link href="/" prefetch={false} className="flex h-11 items-center gap-2.5 rounded-lg">
+    <SectionLink
+      section={TOP}
+      href="/"
+      onClick={onClick}
+      onScrollInPlace={onScrollInPlace}
+      className="flex h-11 items-center gap-2.5 rounded-lg"
+    >
       {/* Dark monogram in light mode, accent monogram in dark mode: keeps AA contrast in both. */}
       <span
         aria-hidden="true"
@@ -16,6 +29,6 @@ export function Logo() {
         <span className="xl:hidden">{person.shortName}</span>
         <span className="hidden xl:inline">{person.name}</span>
       </span>
-    </Link>
+    </SectionLink>
   );
 }

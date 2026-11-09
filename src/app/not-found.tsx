@@ -6,7 +6,7 @@ import { ui } from "@/content";
 
 export default function NotFound() {
   return (
-    <PageShell onHome={false}>
+    <PageShell page="project">
       <section className="wrap flex min-h-[60dvh] flex-col items-start justify-center gap-5 py-24">
         <p className="font-mono text-[13px] text-accent-strong">404</p>
         <h1 className="font-heading text-h2 font-semibold tracking-[-0.025em] text-fg">{ui.notFound.title}</h1>

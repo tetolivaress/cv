@@ -11,11 +11,10 @@ const MobileMenuSheet = dynamic(loadSheet, { ssr: false });
 
 interface Props {
   active: string | null;
-  hrefFor: (id: string) => string;
 }
 
 /** Hamburger button. The sheet (and Radix) is fetched on hover/touch/focus, before the click lands. */
-export function MobileMenu({ active, hrefFor }: Props) {
+export function MobileMenu({ active }: Props) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -46,7 +45,6 @@ export function MobileMenu({ active, hrefFor }: Props) {
           onOpenChange={setOpen}
           returnFocus={() => buttonRef.current?.focus()}
           active={active}
-          hrefFor={hrefFor}
         />
       )}
     </>

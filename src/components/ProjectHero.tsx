@@ -1,8 +1,9 @@
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, Play } from "lucide-react";
 import { projects, sections, t, ui, type Project } from "@/content";
+import { homeSectionPath } from "@/lib/section-nav";
 import { displayUrl } from "@/lib/site-url";
+import { SectionLink } from "./SectionLink";
 import { button, tag } from "./ui";
 
 /** Pencil "ProjectHero": breadcrumb, name, summary, CTAs, meta panel and cover. */
@@ -18,10 +19,14 @@ export function ProjectHero({ project, index }: { project: Project; index: numbe
   return (
     <section aria-labelledby="project-name" className="wrap flex flex-col gap-6 pb-10 pt-6 md:gap-8 md:pb-16 md:pt-10">
       <div className="flex items-center justify-between gap-3">
-        <Link href={`/#${sections.projects.id}`} prefetch={false} className="flex h-11 items-center gap-1.5 text-base font-medium text-fg-2 hover:text-fg md:text-[15px]">
+        <SectionLink
+          section={sections.projects.id}
+          href={homeSectionPath(sections.projects.id)}
+          className="flex h-11 items-center gap-1.5 text-base font-medium text-fg-2 hover:text-fg md:text-[15px]"
+        >
           <ArrowLeft size={18} aria-hidden="true" />
           {p.allProjects}
-        </Link>
+        </SectionLink>
         <p className="font-mono text-xs uppercase text-fg-3">{t(p.counter, { i: pad(index + 1), n: pad(projects.length) })}</p>
       </div>
 
@@ -40,10 +45,15 @@ export function ProjectHero({ project, index }: { project: Project; index: numbe
               <span className="sr-only"> ({displayUrl(project.url)})</span>
             </a>
             {project.videos.length > 0 && (
-              <a href="#tutorials" className={`${button.secondary} w-full sm:w-auto`}>
+              <SectionLink
+                section="tutorials"
+                href={`/projects/${project.slug}/tutorials`}
+                page="project"
+                className={`${button.secondary} w-full sm:w-auto`}
+              >
                 <Play size={18} aria-hidden="true" />
                 {t(ui.watchTutorials, { n: project.videos.length })}
-              </a>
+              </SectionLink>
             )}
           </div>
         </div>

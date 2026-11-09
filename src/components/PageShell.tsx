@@ -1,21 +1,26 @@
-import { ui } from "@/content";
+import type { PageKind } from "@/lib/section-nav";
 import { Header } from "./Header";
+import { SectionRouter } from "./SectionRouter";
+import { SkipLink } from "./SkipLink";
 
-/** Skip link, sticky header and the decorative glows shown on ≥1920px screens. */
-export function PageShell({ children, onHome = true }: { children: React.ReactNode; onHome?: boolean }) {
+interface Props {
+  children: React.ReactNode;
+  page: PageKind;
+  /** Section to scroll to on load (for clean URLs such as /experience). */
+  initialSection?: string;
+}
+
+/** Skip link, sticky header, section routing and the decorative glows shown on ≥1920px screens. */
+export function PageShell({ children, page, initialSection }: Props) {
   return (
-    <div id="top" className="relative isolate overflow-x-clip">
-      <a
-        href="#main"
-        className="fixed left-4 top-4 z-[70] -translate-y-24 rounded-xl bg-inverse px-4 py-3 text-sm font-semibold text-on-inverse transition-transform focus:translate-y-0"
-      >
-        {ui.skipToContent}
-      </a>
+    <div id="top" data-page={page} className="relative isolate overflow-x-clip">
+      <SkipLink />
+      <SectionRouter page={page} initial={initialSection} />
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 hidden overflow-hidden 3xl:block">
         <div className="absolute -left-[12vw] -top-[300px] aspect-square w-[45vw] rounded-full bg-[radial-gradient(closest-side,#3ddcb422,#3ddcb400)]" />
         <div className="absolute -right-[12vw] top-[2600px] aspect-square w-[40vw] rounded-full bg-[radial-gradient(closest-side,#3ddcb418,#3ddcb400)]" />
       </div>
-      <Header onHome={onHome} />
+      <Header page={page} />
       <main id="main" tabIndex={-1} className="outline-none">
         {children}
       </main>

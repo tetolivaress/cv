@@ -125,7 +125,7 @@ src/
     resume.ts        ← raw data + copy (edit this)
     index.ts         ← cleans TODO/empty values, derives stats, dates, warnings
     types.ts
-  app/               ← routes: /, /projects/[slug], sitemap.xml, robots.txt, og.png, apple-touch-icon.png
+  app/               ← routes: /, /[section], /projects, /projects/[slug](/tutorials), sitemap.xml, robots.txt, og.png
   components/        ← Header, Hero, Timeline, TimelineItem, ProjectCard, VideoEmbed, SkillGroup,
                        CertModal, CertCard, Footer, … (one per Pencil component)
   lib/               ← theme, site URL, image loader
@@ -134,6 +134,16 @@ scripts/
   optimize-images.ts ← WebP variants for next/image (static export has no image server)
 tests/               ← Playwright: e2e, axe accessibility, responsive screenshots
 ```
+
+### Clean URLs (no `#`)
+
+Every home section has its own address: `/about`, `/experience`, `/projects`, `/skills`, `/certifications` and `/contact`. Project tutorials live at `/projects/<slug>/tutorials`.
+
+- On the home page, nav links smooth-scroll and update the address bar with `history.pushState`, so the page never reloads.
+- Opening or reloading one of those URLs loads the same one-page CV and jumps to the section.
+- Back and Forward move between sections.
+
+These pages are generated from `sectionOrder` in `src/content`. Their canonical URL is `/`, so search engines index the CV once. The logic lives in `src/lib/section-nav.ts`, `SectionLink` and `SectionRouter`.
 
 ### PDF CV
 

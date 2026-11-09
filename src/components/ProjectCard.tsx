@@ -72,7 +72,7 @@ export function ProjectCard({ project, priority = false }: { project: Project; p
             {ui.visitSite}
           </a>
           {videos > 0 && (
-            <Link href={`${detail}#tutorials`} className={`${button.secondarySm} flex-1`}>
+            <Link href={`${detail}/tutorials`} className={`${button.secondarySm} flex-1`}>
               <Play size={16} aria-hidden="true" />
               {ui.watchTutorial}
             </Link>
