@@ -1,22 +1,25 @@
 import { ArrowUpRight } from "lucide-react";
 import type { CSSProperties } from "react";
-import { person, projects, sections, ui } from "@/content";
+import { getContent } from "@/content";
+import type { Locale } from "@/i18n/config";
 import { SocialIcon } from "./Icons";
 import { ProjectCard } from "./ProjectCard";
 import { SectionHead } from "./SectionHead";
 import { button } from "./ui";
 
 /** How many columns the GitHub tile spans to fill the last row at `cols` columns. */
-const tileSpan = (cols: number) => {
-  const rest = projects.length % cols;
+const tileSpan = (count: number, cols: number) => {
+  const rest = count % cols;
   return rest === 0 ? cols : cols - rest;
 };
 
 /** Pencil "Projects": grid of 1 / 2 (≥640) / 3 (≥1024) / 4 (≥1920) columns plus the GitHub tile. */
-export function Projects() {
+export function Projects({ locale }: { locale: Locale }) {
+  const { sections, person, projects, ui } = getContent(locale);
   const s = sections.projects;
   const github = person.links.github;
-  const spans = { "--span-2": tileSpan(2), "--span-3": tileSpan(3), "--span-4": tileSpan(4) } as CSSProperties;
+  const n = projects.length;
+  const spans = { "--span-2": tileSpan(n, 2), "--span-3": tileSpan(n, 3), "--span-4": tileSpan(n, 4) } as CSSProperties;
   const Github = SocialIcon.github;
 
   return (
@@ -32,7 +35,7 @@ export function Projects() {
       <ul className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 md:mt-12 md:gap-6 lg:grid-cols-3 3xl:grid-cols-4">
         {projects.map((project, i) => (
           <li key={project.slug}>
-            <ProjectCard project={project} priority={i === 0} />
+            <ProjectCard project={project} locale={locale} priority={i === 0} />
           </li>
         ))}
         {github && (

@@ -1,16 +1,13 @@
 /**
  * Clean section URLs without "#": every home section has its own path
- * (/experience, /projects, …) that is also a real static page. On a page that
- * already contains the section we scroll to it and update the address bar with
- * history.pushState instead of reloading.
+ * (/experience, /es/experiencia, …) that is also a real static page. On a page
+ * that already contains the section we scroll to it and update the address bar
+ * with history.pushState instead of reloading.
  */
+import { parsePath, TOP, TUTORIALS_ID } from "../i18n/routes";
 
+export { TOP };
 export type PageKind = "home" | "project";
-
-/** "top" means the top of the page. */
-export const TOP = "top";
-
-export const homeSectionPath = (id: string) => (id === TOP ? "/" : `/${id}`);
 
 /** The page currently rendered (set as data-page on the page shell). */
 export function currentPage(): PageKind | null {
@@ -47,10 +44,10 @@ export function pushPath(path: string) {
   if (window.location.pathname !== path) window.history.pushState(null, "", path);
 }
 
-/** Which section a path points to on the given page kind. */
-export function sectionFromPath(pathname: string, page: PageKind): string {
-  const parts = pathname.replace(/\/+$/, "").split("/").filter(Boolean);
-  if (page === "home") return parts[0] ?? TOP;
-  // /projects/<slug>/<section>
-  return parts[2] ?? TOP;
+/** DOM id of the section a path points to ("top" when it is the page itself). */
+export function sectionIdFromPath(pathname: string): string {
+  const route = parsePath(pathname);
+  if (!route) return TOP;
+  if (route.page === "home") return route.section;
+  return route.tutorials ? TUTORIALS_ID : TOP;
 }

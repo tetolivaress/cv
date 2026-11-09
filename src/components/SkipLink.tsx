@@ -1,9 +1,10 @@
 "use client";
 
-import { ui } from "@/content";
+import { useSite } from "./site/SiteProvider";
 
 /** Keyboard skip link that moves focus to the main content without adding "#main" to the URL. */
 export function SkipLink() {
+  const { ui } = useSite();
   return (
     <a
       href="#main"

@@ -1,8 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
-import { issuerStyle, t, ui, type Certification } from "@/content";
+import type { Certification } from "@/content/types";
+import { issuerStyle, t } from "@/content/format";
 import { cn } from "@/lib/cn";
 import { CertPaper } from "./CertPaper";
+import { useSite } from "./site/SiteProvider";
 import { cardLift } from "./ui";
 
 interface Props {
@@ -14,7 +18,8 @@ interface Props {
 
 /** Pencil "CertCard": image (or placeholder paper) that opens the lightbox, issuer, name, date and credential link. */
 export function CertCard({ cert, onEnlarge, className, headingLevel: Heading = "h3" }: Props) {
-  const issuer = issuerStyle(cert.issuer);
+  const { ui, issuers } = useSite();
+  const issuer = issuerStyle(issuers, cert.issuer);
   const hasFooter = !!(cert.date || cert.credentialUrl);
   return (
     <article className={cn("flex h-full flex-col overflow-hidden rounded-2xl bg-surface ring-1 ring-inset ring-line", cardLift, className)}>

@@ -2,11 +2,12 @@
 
 import { Check, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
-import { ui } from "@/content";
+import { useSite } from "./site/SiteProvider";
 import { button } from "./ui";
 
 /** Copies the email address and announces it to screen readers. */
 export function CopyEmail({ email }: { email: string }) {
+  const { ui } = useSite();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {

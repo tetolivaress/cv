@@ -1,13 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Play } from "lucide-react";
-import { t, ui, type Project } from "@/content";
+import { getContent, t, type Project } from "@/content";
+import type { Locale } from "@/i18n/config";
+import { projectPath } from "@/i18n/routes";
 import { displayUrl } from "@/lib/site-url";
 import { button, cardLift, tag } from "./ui";
 
 /** Pencil "ProjectCard": cover with tutorial count, name, role, summary, stack and actions. */
-export function ProjectCard({ project, priority = false }: { project: Project; priority?: boolean }) {
-  const detail = `/projects/${project.slug}`;
+export function ProjectCard({ project, locale, priority = false }: { project: Project; locale: Locale; priority?: boolean }) {
+  const { ui } = getContent(locale);
+  const detail = projectPath(locale, project.slug);
   const videos = project.videos.length;
   return (
     <article className={`flex h-full flex-col overflow-hidden rounded-[20px] bg-surface ring-1 ring-inset ring-line ${cardLift}`}>
@@ -51,7 +54,7 @@ export function ProjectCard({ project, priority = false }: { project: Project; p
         {project.summary && <p className="text-base leading-6 text-fg-2">{project.summary}</p>}
 
         {project.stack.length > 0 && (
-          <ul className="flex flex-wrap gap-1.5" aria-label="Stack">
+          <ul className="flex flex-wrap gap-1.5" aria-label={ui.stackLabel}>
             {project.stack.map((item) => (
               <li key={item} className={tag}>
                 {item}
@@ -72,7 +75,7 @@ export function ProjectCard({ project, priority = false }: { project: Project; p
             {ui.visitSite}
           </a>
           {videos > 0 && (
-            <Link href={`${detail}/tutorials`} className={`${button.secondarySm} flex-1`}>
+            <Link href={projectPath(locale, project.slug, true)} className={`${button.secondarySm} flex-1`}>
               <Play size={16} aria-hidden="true" />
               {ui.watchTutorial}
             </Link>

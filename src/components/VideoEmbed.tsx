@@ -3,7 +3,9 @@
 import Image from "next/image";
 import { Play } from "lucide-react";
 import { useState } from "react";
-import { t, ui, type Video } from "@/content";
+import { t } from "@/content/format";
+import type { Video } from "@/content/types";
+import { useSite } from "./site/SiteProvider";
 
 let warmed = false;
 /** Opens connections to YouTube on hover/focus so the click starts playback faster. */
@@ -31,6 +33,7 @@ interface Props {
  * (youtube-nocookie) only loads after the visitor clicks.
  */
 export function VideoEmbed({ video, avatar, autoplay = false }: Props) {
+  const { ui } = useSite();
   const [playing, setPlaying] = useState(autoplay);
   const label = t(ui.project.play, { title: video.title });
 

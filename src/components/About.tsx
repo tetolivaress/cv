@@ -1,8 +1,10 @@
-import { person, sections, stats } from "@/content";
+import { getContent } from "@/content";
+import type { Locale } from "@/i18n/config";
 import { SectionHead } from "./SectionHead";
 
 /** Pencil "About": section head + summary, and a 2×2 grid of stats. */
-export function About() {
+export function About({ locale }: { locale: Locale }) {
+  const { sections, person, stats } = getContent(locale);
   const s = sections.about;
   return (
     <section id={s.id} aria-labelledby={`${s.id}-title`} className="wrap section-y">

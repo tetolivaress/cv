@@ -3,67 +3,67 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { RotateCcw, Search, SearchX, X } from "lucide-react";
 import { useDeferredValue, useMemo, useRef, useState } from "react";
-import {
-  certCategories,
-  certifications,
-  certYearRange,
-  t,
-  ui,
-  type CertCategory,
-  type Certification,
-} from "@/content";
+import type { CertCategory, Certification } from "@/content/types";
+import { t } from "@/content/format";
 import { cn } from "@/lib/cn";
 import { CertCard } from "./CertCard";
 import { certLightboxItems, certLightboxLabels } from "./certLightbox";
 import { Lightbox } from "./Lightbox";
+import { useSite } from "./site/SiteProvider";
 import { button } from "./ui";
 
 export type CertFilter = CertCategory | "All";
 
 const normalize = (value: string) =>
-  value.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-function matches(cert: Certification, query: string) {
+function matches(cert: Certification, categoryLabel: string, query: string) {
   if (!query) return true;
-  const haystack = normalize([cert.name, cert.issuer, cert.category, cert.date ?? ""].join(" "));
+  const haystack = normalize([cert.name, cert.issuer, cert.category, categoryLabel, cert.date ?? ""].join(" "));
   return normalize(query)
     .split(/\s+/)
     .filter(Boolean)
     .every((word) => haystack.includes(word));
 }
 
-const counts: Record<CertFilter, number> = {
-  All: certifications.length,
-  ...(Object.fromEntries(
-    certCategories.map((category) => [category, certifications.filter((c) => c.category === category).length]),
-  ) as Record<CertCategory, number>),
-};
-const filters: CertFilter[] = ["All", ...certCategories.filter((c) => counts[c] > 0)];
-const range = certYearRange();
-const subtitle = t(ui.certs.subtitle, { n: certifications.length, range }).replace(/ · $/, "");
-
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   filter: CertFilter;
   onFilterChange: (filter: CertFilter) => void;
+  certifications: Certification[];
+  categories: CertCategory[];
+  yearRange: string;
 }
 
 /**
  * Pencil "CertModal": full-screen sheet on phones, centered modal (max 1100px)
  * from 768px. Category chips + search; clicking an image opens the lightbox.
  */
-export function CertModal({ open, onOpenChange, filter, onFilterChange }: Props) {
+export function CertModal({ open, onOpenChange, filter, onFilterChange, certifications, categories, yearRange }: Props) {
+  const { ui } = useSite();
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const counts = useMemo(() => {
+    const out = { All: certifications.length } as Record<CertFilter, number>;
+    for (const category of categories) out[category] = certifications.filter((c) => c.category === category).length;
+    return out;
+  }, [certifications, categories]);
+  const filters: CertFilter[] = ["All", ...categories];
+  const label = (value: CertFilter) => (value === "All" ? ui.certs.all : ui.certs.categories[value]);
+  const subtitle = t(ui.certs.subtitle, { n: certifications.length, range: yearRange }).replace(/ · $/, "");
+
   const results = useMemo(
-    () => certifications.filter((c) => (filter === "All" || c.category === filter) && matches(c, deferredQuery.trim())),
-    [filter, deferredQuery],
+    () =>
+      certifications.filter(
+        (c) => (filter === "All" || c.category === filter) && matches(c, ui.certs.categories[c.category], deferredQuery.trim()),
+      ),
+    [certifications, filter, deferredQuery, ui],
   );
-  const slides = useMemo(() => certLightboxItems(results), [results]);
+  const slides = useMemo(() => certLightboxItems(results, ui), [results, ui]);
 
   const reset = () => {
     setQuery("");
@@ -128,7 +128,7 @@ export function CertModal({ open, onOpenChange, filter, onFilterChange }: Props)
 
               <div
                 role="group"
-                aria-label="Filter by category"
+                aria-label={ui.certs.filterLabel}
                 className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 sm:-mx-5 sm:px-5 lg:mx-0 lg:px-0"
               >
                 {filters.map((value) => {
@@ -144,7 +144,7 @@ export function CertModal({ open, onOpenChange, filter, onFilterChange }: Props)
                         active ? "bg-inverse text-on-inverse ring-inverse" : "text-fg ring-line-strong hover:bg-surface-2",
                       )}
                     >
-                      {value === "All" ? ui.certs.all : value}
+                      {label(value)}
                       <span className={cn("font-mono text-xs", active ? "text-on-inverse" : "text-fg-3")}>{counts[value]}</span>
                     </button>
                   );
@@ -161,7 +161,7 @@ export function CertModal({ open, onOpenChange, filter, onFilterChange }: Props)
                 </p>
                 <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
                   {results.map((cert, i) => (
-                    <li key={`${cert.issuer}-${cert.name}`}>
+                    <li key={cert.key}>
                       <CertCard cert={cert} onEnlarge={() => setLightbox(i)} />
                     </li>
                   ))}
@@ -173,7 +173,7 @@ export function CertModal({ open, onOpenChange, filter, onFilterChange }: Props)
                   <SearchX size={28} aria-hidden="true" />
                 </span>
                 <p className="max-w-[420px] text-[22px] text-fg">
-                  {query ? t(ui.certs.emptyTitle, { q: query }) : t(ui.certs.emptyTitle, { q: filter })}
+                  {t(ui.certs.emptyTitle, { q: query || label(filter) })}
                 </p>
                 <p className="max-w-[380px] text-base leading-6 text-fg-2">
                   {t(ui.certs.emptyText, { n: certifications.length })}
@@ -186,7 +186,7 @@ export function CertModal({ open, onOpenChange, filter, onFilterChange }: Props)
             )}
           </div>
 
-          <Lightbox items={slides} index={lightbox} onIndexChange={setLightbox} labels={certLightboxLabels} />
+          <Lightbox items={slides} index={lightbox} onIndexChange={setLightbox} labels={certLightboxLabels(ui)} />
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

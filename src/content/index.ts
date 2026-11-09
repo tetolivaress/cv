@@ -1,22 +1,33 @@
 /**
- * Clean, typed view of `resume.ts`. Every component and the PDF script import
- * from here, never from `resume.ts` directly. Values that are empty or still
- * "TODO" are dropped, and `contentWarnings` lists them for the build log.
+ * Clean, typed, single-language view of `resume.ts` + `copy.ts`.
+ * Server components and the PDF script call `getContent(locale)`. Client
+ * components never import this module (so the data is not bundled twice);
+ * they receive what they need through `SiteProvider` (see getSiteClient).
  */
+import { locales, type Locale } from "../i18n/config";
+import { homePath, sectionKeys, type SectionKey } from "../i18n/routes";
+import { copy } from "./copy";
+import { countWord, isPresent, parseDate, sortKey, t } from "./format";
 import * as raw from "./resume";
 import type {
   CertCategory,
   Certification,
+  Education,
+  Era,
   Experience,
-  IssuerStyle,
+  L,
   Language,
   Links,
   Person,
   Project,
+  ProjectStory,
+  SkillGroupData,
   Video,
 } from "./types";
 
 export type * from "./types";
+export { t } from "./format";
+export type { SectionKey };
 
 // ───────────────────────── helpers ─────────────────────────
 
@@ -28,281 +39,344 @@ export function isMissing(value: unknown): boolean {
   return false;
 }
 
-const warnings: string[] = [];
+const isLocalized = (value: unknown): value is Record<Locale, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value) && locales.every((l) => l in value);
 
-function take<T>(value: T | undefined, where: string, warn = true): T | undefined {
-  if (isMissing(value)) {
-    if (warn) warnings.push(where);
-    return undefined;
+/** Warnings collector for one language. Messages for shared (non-translated) fields have no tag. */
+class Warnings {
+  readonly list: string[] = [];
+  constructor(private readonly locale: Locale) {}
+  add(where: string, localized: boolean) {
+    this.list.push(localized ? `[${this.locale}] ${where}` : where);
   }
-  return value;
 }
 
-function list(values: string[] | undefined, where: string): string[] {
-  const kept = (values ?? []).filter((v) => !isMissing(v));
-  if ((values ?? []).length !== kept.length) warnings.push(where);
-  return kept;
-}
-
-/** Replaces `{key}` placeholders. A "singular|plural" string picks by `n`. */
-export function t(template: string, vars: Record<string, string | number> = {}): string {
-  let text = template;
-  if (text.includes("|") && typeof vars.n === "number") {
-    const [one, many] = text.split("|");
-    text = vars.n === 1 ? one : many;
+function makeResolver(locale: Locale, warnings: Warnings) {
+  /** Picks the language; returns undefined (and warns) for empty/TODO values. */
+  function text(value: L<string> | undefined, where: string, warn = true): string | undefined {
+    const localized = isLocalized(value);
+    const picked = localized ? (value as Record<Locale, string>)[locale] : (value as string | undefined);
+    if (isMissing(picked)) {
+      if (warn) warnings.add(where, localized);
+      return undefined;
+    }
+    return picked;
   }
-  return text.replace(/\{(\w+)\}/g, (_, key: string) => String(vars[key] ?? `{${key}}`));
-}
-
-const WORDS = [
-  "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
-  "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty",
-];
-/** 9 → "Nine" (capitalized), 42 → "42". */
-export function countWord(n: number): string {
-  const word = WORDS[n];
-  return word ? word[0].toUpperCase() + word.slice(1) : String(n);
-}
-
-// ───────────────────────── dates ─────────────────────────
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const PRESENT = /^present$/i;
-
-interface ParsedDate {
-  year: number;
-  month?: number; // 1-12
-  present?: boolean;
-}
-
-export function parseDate(value?: string): ParsedDate | undefined {
-  if (!value) return undefined;
-  if (PRESENT.test(value)) {
-    const now = new Date();
-    return { year: now.getFullYear(), month: now.getMonth() + 1, present: true };
+  function list(value: L<string[]> | L<string>[] | undefined, where: string): string[] {
+    if (isLocalized(value)) {
+      const picked = (value as Record<Locale, string[]>)[locale] ?? [];
+      const kept = picked.filter((v) => !isMissing(v));
+      if (kept.length !== picked.length || picked.length === 0) warnings.add(where, true);
+      return kept;
+    }
+    const items = (value as L<string>[] | undefined) ?? [];
+    const kept = items.map((item, i) => text(item, `${where}[${i}]`)).filter((v): v is string => !!v);
+    return kept;
   }
-  const match = value.match(/^(\d{4})(?:-(\d{1,2}))?/);
-  if (!match) return undefined;
-  return { year: Number(match[1]), month: match[2] ? Number(match[2]) : undefined };
+  return { text, list };
 }
 
-/** Years only, as in the design: "2024 — Present", "2021", "2018 — 2021". */
-export function formatYears(start?: string, end?: string): string {
-  const s = parseDate(start);
-  const e = parseDate(end);
-  const present = raw.site.ui.present;
-  const endLabel = e?.present ? present : e ? String(e.year) : undefined;
-  if (s && endLabel) return String(s.year) === endLabel ? endLabel : `${s.year} — ${endLabel}`;
-  return String(s?.year ?? endLabel ?? "");
-}
+const plain = (value: string | undefined) => (isMissing(value) ? undefined : value);
 
-/** Month precision when known, for the PDF: "May 2021 – Sep 2021". */
-export function formatMonths(start?: string, end?: string): string {
-  const fmt = (d?: ParsedDate) =>
-    !d ? undefined : d.present ? raw.site.ui.present : d.month ? `${MONTHS[d.month - 1]} ${d.year}` : String(d.year);
-  const s = fmt(parseDate(start));
-  const e = fmt(parseDate(end));
-  if (s && e) return s === e ? s : `${s} – ${e}`;
-  return s ?? e ?? "";
-}
+// ───────────────────────── content per language ─────────────────────────
 
-/** "2 yrs 7 mos", "5 mos", "1 yr". Undefined when the dates are too vague. */
-export function formatDuration(start?: string, end?: string): string | undefined {
-  const s = parseDate(start);
-  const e = parseDate(end);
-  if (!s || !e) return undefined;
-  let months: number;
-  if (s.month && e.month) months = (e.year - s.year) * 12 + (e.month - s.month) + 1;
-  else if (e.year > s.year) months = (e.year - s.year) * 12;
-  else return undefined;
-  if (months <= 0) return undefined;
-  const years = Math.floor(months / 12);
-  const rest = months % 12;
-  const parts: string[] = [];
-  if (years) parts.push(`${years} ${years === 1 ? "yr" : "yrs"}`);
-  if (rest) parts.push(`${rest} ${rest === 1 ? "mo" : "mos"}`);
-  return parts.join(" ");
-}
+function build(locale: Locale) {
+  const warnings = new Warnings(locale);
+  const { text, list } = makeResolver(locale, warnings);
+  const c = copy[locale];
+  const ui = c.ui;
 
-const sortKey = (value?: string) => {
-  const d = parseDate(value);
-  return d ? d.year * 100 + (d.month ?? 0) : -1;
-};
-
-// ───────────────────────── clean data ─────────────────────────
-
-function cleanLinks(links: Links): Links {
-  const out: Links = {};
-  for (const key of Object.keys(links) as (keyof Links)[]) {
-    const value = take(links[key], `person.links.${key}`);
-    if (value) out[key] = value;
+  // person
+  const p = raw.person;
+  const links: Links = {};
+  for (const key of Object.keys(p.links) as (keyof Links)[]) {
+    const value = plain(p.links[key]);
+    if (value) links[key] = value;
+    else warnings.add(`person.links.${key}`, false);
   }
-  return out;
-}
-
-const p = raw.person;
-export const person: Person = {
-  ...p,
-  workMode: take(p.workMode, "person.workMode", false),
-  availability: take(p.availability, "person.availability", false),
-  photo: take(p.photo, "person.photo"),
-  links: cleanLinks(p.links),
-  languages: p.languages
-    .filter((l) => !isMissing(l.name))
-    .map<Language>((l) => ({ ...l, cefr: take(l.cefr, `language ${l.name}.cefr`, false) })),
-};
-
-export const eras = raw.eras;
-
-export const experience: Experience[] = raw.experience.map((job, i) => {
-  const label = `experience[${i}] ${isMissing(job.company) ? job.role : job.company}`;
-  return {
-    ...job,
-    company: take(job.company, `${label}: company`),
-    start: take(job.start, `${label}: start date`),
-    end: take(job.end, `${label}: end date`),
-    highlights: list(job.highlights, `${label}: highlights`),
-    stack: list(job.stack, `${label}: stack`),
+  const person: Person = {
+    name: p.name,
+    shortName: p.shortName,
+    initials: p.initials,
+    title: text(p.title, "person.title") ?? "",
+    tagline: text(p.tagline, "person.tagline") ?? "",
+    location: text(p.location, "person.location") ?? "",
+    workMode: text(p.workMode, "person.workMode", false),
+    availability: text(p.availability, "person.availability", false),
+    email: p.email,
+    photo: plain(p.photo),
+    photoFocus: plain(p.photoFocus),
+    links,
+    summary: text(p.summary, "person.summary") ?? "",
+    languages: p.languages
+      .map<Language | undefined>((l, i) => {
+        const name = text(l.name, `person.languages[${i}].name`);
+        if (!name) return undefined;
+        return {
+          name,
+          level: text(l.level, `person.languages[${i}].level`) ?? "",
+          cefr: plain(l.cefr),
+          native: l.native,
+          note: text(l.note, `person.languages[${i}].note`, false),
+        };
+      })
+      .filter((l): l is Language => !!l),
   };
-});
 
-export const projects: Project[] = raw.projects.map((project, i) => {
-  const label = `projects[${i}] ${project.name}`;
-  const videos: Video[] = [];
-  project.videos.forEach((video, v) => {
-    const id = take(video.youtubeId, `${label}: videos[${v}].youtubeId`);
-    if (!id) return;
-    videos.push({ ...video, youtubeId: id, title: take(video.title, `${label}: videos[${v}].title`) ?? project.name });
+  const eras: Era[] = raw.eras.map((era) => ({ ...era, label: text(era.label, `eras[${era.id}].label`) ?? "" }));
+
+  const experience: Experience[] = raw.experience.map((job, i) => {
+    const company = plain(job.company);
+    if (!company) warnings.add(`experience[${i}]: company`, false);
+    const label = `experience[${i}] ${company ?? ""}`.trim();
+    const start = plain(job.start);
+    const end = plain(job.end);
+    if (!start) warnings.add(`${label}: start date`, false);
+    if (!end) warnings.add(`${label}: end date`, false);
+    return {
+      company,
+      role: text(job.role, `${label}: role`) ?? "",
+      start,
+      end,
+      remote: job.remote,
+      era: job.era,
+      highlights: list(job.highlights, `${label}: highlights`),
+      stack: list(job.stack, `${label}: stack`),
+    };
   });
-  return {
-    ...project,
-    summary: take(project.summary, `${label}: summary`) ?? "",
-    role: take(project.role, `${label}: role`),
-    dates: take(project.dates, `${label}: dates`, false),
-    platform: take(project.platform, `${label}: platform`, false),
-    cover: take(project.cover, `${label}: cover`),
-    stack: list(project.stack, `${label}: stack`),
-    videos,
-    images: project.images.filter((img) => !isMissing(img.src)),
-  };
-});
 
-export function getProject(slug: string) {
-  const index = projects.findIndex((p) => p.slug === slug);
+  const projects: Project[] = raw.projects.map((project, i) => {
+    const label = `projects[${i}] ${project.name}`;
+    const videos: Video[] = [];
+    project.videos.forEach((video, v) => {
+      const id = plain(video.youtubeId);
+      if (!id) return warnings.add(`${label}: videos[${v}].youtubeId`, false);
+      videos.push({ youtubeId: id, duration: plain(video.duration), title: text(video.title, `${label}: videos[${v}].title`) ?? project.name });
+    });
+    const step = (s: { title: L<string>; text: L<string> } | undefined, name: string) =>
+      s ? { title: text(s.title, `${label}: story.${name}.title`) ?? "", text: text(s.text, `${label}: story.${name}.text`) ?? "" } : undefined;
+    const story: ProjectStory | undefined = project.story
+      ? {
+          problem: step(project.story.problem, "problem"),
+          solution: step(project.story.solution, "solution"),
+          result: project.story.result
+            ? {
+                ...step(project.story.result, "result")!,
+                metrics: project.story.result.metrics?.map((m) => ({ value: m.value, label: text(m.label, `${label}: metric`) ?? "" })),
+              }
+            : undefined,
+        }
+      : undefined;
+    return {
+      slug: project.slug,
+      name: project.name,
+      url: project.url,
+      summary: text(project.summary, `${label}: summary`) ?? "",
+      description: text(project.description, `${label}: description`, false),
+      role: text(project.role, `${label}: role`),
+      dates: text(project.dates, `${label}: dates`, false),
+      platform: text(project.platform, `${label}: platform`, false),
+      stack: list(project.stack, `${label}: stack`),
+      cover: plain(project.cover),
+      videos,
+      images: project.images
+        .filter((img) => !isMissing(img.src))
+        .map((img, n) => ({ src: img.src, alt: text(img.alt, `${label}: images[${n}].alt`) ?? project.name })),
+      story,
+    };
+  });
+
+  const skills: SkillGroupData[] = raw.skills
+    .map((g, i) => ({ group: text(g.group, `skills[${i}].group`) ?? "", items: list(g.items, `skills[${i}]`) }))
+    .filter((g) => g.group && g.items.length > 0);
+
+  const education: Education[] = raw.education
+    .map((e, i) => ({ degree: text(e.degree, `education[${i}].degree`) ?? "", school: e.school, year: e.year }))
+    .filter((e) => e.degree);
+
+  const certifications: Certification[] = raw.certifications
+    .map((cert, i) => {
+      const missing = (["date", "credentialUrl", "image"] as const).filter((k) => isMissing(cert[k]));
+      const name = text(cert.name, `certifications[${i}] ${cert.issuer}: name`) ?? "";
+      const englishName = isLocalized(cert.name) ? (cert.name as Record<Locale, string>).en : cert.name;
+      if (missing.length) warnings.add(`certifications[${i}] ${cert.issuer} — ${englishName}: ${missing.join(", ")}`, false);
+      return {
+        key: `${cert.category}-${i}`,
+        category: cert.category,
+        name,
+        issuer: cert.issuer,
+        date: plain(cert.date),
+        credentialUrl: plain(cert.credentialUrl),
+        image: plain(cert.image),
+        featured: cert.featured,
+        order: i,
+      };
+    })
+    // Newest first; undated ones keep their order at the end.
+    .sort((a, b) => sortKey(b.date) - sortKey(a.date) || a.order - b.order)
+    .map(({ order: _order, ...cert }) => cert);
+
+  const featuredCertifications = (() => {
+    const featured = certifications.filter((cert) => cert.featured);
+    return featured.length ? featured : certifications.slice(0, 4);
+  })();
+
+  const certYears = certifications.map((cert) => parseDate(cert.date)?.year).filter((y): y is number => !!y);
+  const certYearRange = certYears.length
+    ? Math.min(...certYears) === Math.max(...certYears)
+      ? String(certYears[0])
+      : `${Math.min(...certYears)} — ${Math.max(...certYears)}`
+    : "";
+
+  const startYears = experience.map((job) => parseDate(job.start)?.year).filter((y): y is number => !!y);
+  const careerStartYear = Math.min(...startYears);
+  const yearsOfExperience = new Date().getFullYear() - careerStartYear;
+  const currentJob = experience.find((job) => isPresent(job.end));
+
+  /** "Spanish native · English B2" / "Español nativo · Inglés B2" */
+  const languagesLine = person.languages
+    .map((l) => (l.cefr && !l.native ? `${l.name} ${l.cefr}` : `${l.name} ${l.level.toLowerCase()}`))
+    .join(" · ");
+
+  const stats = [
+    { value: `${yearsOfExperience}+`, label: ui.stats.years },
+    { value: String(experience.length), label: ui.stats.companies },
+    { value: String(projects.length), label: ui.stats.projects },
+    { value: String(certifications.length), label: ui.stats.certifications },
+  ];
+
+  const hasVideos = projects.some((project) => project.videos.length > 0);
+
+  const sections = Object.fromEntries(
+    sectionKeys.map((key, i) => {
+      const s = c.sections[key];
+      const vars = {
+        count:
+          key === "experience"
+            ? countWord(experience.length, locale)
+            : key === "projects"
+              ? countWord(projects.length, locale)
+              : certifications.length,
+        videos: hasVideos ? ui.projectsVideosSuffix : "",
+        since: certYearRange.split(" — ")[0] || careerStartYear,
+      };
+      return [
+        key,
+        {
+          key,
+          id: key,
+          index: String(i + 1).padStart(2, "0"),
+          href: homePath(locale, key),
+          nav: s.nav,
+          eyebrow: s.eyebrow,
+          title: s.title,
+          description: s.description ? t(s.description, vars) : undefined,
+        },
+      ];
+    }),
+  ) as Record<SectionKey, SectionInfo>;
+
+  const socialLinks = (
+    [
+      ["linkedin", "LinkedIn"],
+      ["github", "GitHub"],
+      ["youtube", "YouTube"],
+      ["telegram", "Telegram"],
+    ] as const
+  )
+    .filter(([key]) => person.links[key])
+    .map(([key, label]) => ({ key, label, href: person.links[key] as string }));
+
+  if (!plain(raw.site.url)) warnings.add("site.url (set NEXT_PUBLIC_SITE_URL or deploy on Vercel)", false);
+  const pdfFileName = raw.site.pdf.fileName[locale];
+
+  return {
+    locale,
+    meta: c.meta,
+    ui,
+    person,
+    eras,
+    experience,
+    projects,
+    skills,
+    education,
+    certifications,
+    featuredCertifications,
+    certCategories: (["English", "Development", "Data", "Other"] as CertCategory[]).filter((cat) =>
+      certifications.some((cert) => cert.category === cat),
+    ),
+    certYearRange,
+    careerStartYear,
+    yearsOfExperience,
+    currentJob,
+    languagesLine,
+    stats,
+    hasVideos,
+    sections,
+    sectionOrder: [...sectionKeys] as SectionKey[],
+    headerNav: raw.site.headerNav,
+    socialLinks,
+    issuers: raw.issuers,
+    pdf: { fileName: pdfFileName, href: `/${pdfFileName}`, pageSize: raw.site.pdf.pageSize },
+    siteUrlSetting: plain(raw.site.url),
+    warnings: warnings.list,
+  };
+}
+
+export interface SectionInfo {
+  key: SectionKey;
+  id: string;
+  index: string;
+  href: string;
+  nav: string;
+  eyebrow: string;
+  title: string;
+  description?: string;
+}
+
+export type Content = ReturnType<typeof build>;
+
+const cache = new Map<Locale, Content>();
+export function getContent(locale: Locale): Content {
+  let content = cache.get(locale);
+  if (!content) {
+    content = build(locale);
+    cache.set(locale, content);
+  }
+  return content;
+}
+
+export function getProject(locale: Locale, slug: string) {
+  const { projects } = getContent(locale);
+  const index = projects.findIndex((project) => project.slug === slug);
   if (index === -1) return undefined;
   const n = projects.length;
+  return { project: projects[index], index, previous: projects[(index - 1 + n) % n], next: projects[(index + 1) % n] };
+}
+
+/** Warnings for every language, de-duplicated (shared fields appear once). */
+export function allContentWarnings(): string[] {
+  return [...new Set(locales.flatMap((locale) => getContent(locale).warnings))];
+}
+
+/** The site URL setting from resume.ts (undefined while it is still TODO). */
+export const siteUrlSetting = plain(raw.site.url);
+
+
+// ───────────────────────── what client components receive ─────────────────────────
+
+/** Serializable subset passed to SiteProvider for client components. */
+export function getSiteClient(locale: Locale) {
+  const c = getContent(locale);
   return {
-    project: projects[index],
-    index,
-    previous: projects[(index - 1 + n) % n],
-    next: projects[(index + 1) % n],
+    locale,
+    ui: c.ui,
+    nav: c.sectionOrder.map((key) => c.sections[key]),
+    headerNav: c.headerNav,
+    person: { name: c.person.name, shortName: c.person.shortName, initials: c.person.initials, photo: c.person.photo, photoFocus: c.person.photoFocus },
+    socialLinks: c.socialLinks,
+    pdf: { href: c.pdf.href, fileName: c.pdf.fileName },
+    issuers: c.issuers,
   };
 }
-
-export const skills = Object.entries(raw.skills)
-  .map(([group, items]) => ({ group, items: list(items, `skills.${group}`) }))
-  .filter((g) => g.items.length > 0);
-
-export const education = raw.education.filter((e) => !isMissing(e.degree));
-
-export const certifications: Certification[] = raw.certifications
-  .map((cert, i) => {
-    const missing: string[] = [];
-    const pick = (key: "date" | "credentialUrl" | "image") => {
-      if (isMissing(cert[key])) {
-        missing.push(key);
-        return undefined;
-      }
-      return cert[key];
-    };
-    const cleaned = { ...cert, date: pick("date"), credentialUrl: pick("credentialUrl"), image: pick("image") };
-    if (missing.length) warnings.push(`certifications[${i}] ${cert.issuer} — ${cert.name}: ${missing.join(", ")}`);
-    return cleaned;
-  })
-  // Newest first; undated ones keep their order at the end.
-  .map((cert, order) => ({ cert, order }))
-  .sort((a, b) => sortKey(b.cert.date) - sortKey(a.cert.date) || a.order - b.order)
-  .map(({ cert }) => cert);
-
-export const certCategories: CertCategory[] = ["English", "Development", "Data", "Other"];
-
-export const featuredCertifications = (() => {
-  const featured = certifications.filter((c) => c.featured);
-  return featured.length ? featured : certifications.slice(0, 4);
-})();
-
-export function issuerStyle(issuer: string): IssuerStyle {
-  return raw.issuers[issuer] ?? { ...raw.defaultIssuer, initial: issuer.trim()[0]?.toUpperCase() ?? "·" };
-}
-
-export function certYearRange(): string {
-  const years = certifications.map((c) => parseDate(c.date)?.year).filter((y): y is number => !!y);
-  if (!years.length) return "";
-  const min = Math.min(...years);
-  const max = Math.max(...years);
-  return min === max ? String(min) : `${min} — ${max}`;
-}
-
-// ───────────────────────── derived facts ─────────────────────────
-
-const startYears = experience.map((job) => parseDate(job.start)?.year).filter((y): y is number => !!y);
-export const careerStartYear = Math.min(...startYears);
-export const yearsOfExperience = new Date().getFullYear() - careerStartYear;
-
-export const currentJob = experience.find((job) => job.end && PRESENT.test(job.end));
-
-/** "Spanish native · English B2" */
-export const languagesLine = person.languages
-  .map((l) => (l.cefr && !/native/i.test(l.level) ? `${l.name} ${l.cefr}` : `${l.name} ${l.level.toLowerCase()}`))
-  .join(" · ");
-
-export const stats = [
-  { value: `${yearsOfExperience}+`, label: raw.site.ui.stats.years },
-  { value: String(experience.length), label: raw.site.ui.stats.companies },
-  { value: String(projects.length), label: raw.site.ui.stats.projects },
-  { value: String(certifications.length), label: raw.site.ui.stats.certifications },
-];
-
-export const hasVideos = projects.some((p) => p.videos.length > 0);
-
-/** Section copy with counts filled in. */
-const s = raw.site.sections;
-export const sections = {
-  ...s,
-  experience: { ...s.experience, description: t(s.experience.description, { count: countWord(experience.length) }) },
-  projects: {
-    ...s.projects,
-    description: t(s.projects.description, {
-      count: countWord(projects.length),
-      videos: hasVideos ? raw.site.ui.projectsVideosSuffix : "",
-    }),
-  },
-  certifications: {
-    ...s.certifications,
-    description: t(s.certifications.description, {
-      count: certifications.length,
-      since: certYearRange().split(" — ")[0] || careerStartYear,
-    }),
-  },
-};
-export type SectionKey = keyof typeof sections;
-export const sectionOrder: SectionKey[] = ["about", "experience", "projects", "skills", "certifications", "contact"];
-
-export const site = { ...raw.site, url: take(raw.site.url, "site.url (set NEXT_PUBLIC_SITE_URL or deploy on Vercel)") };
-export const ui = raw.site.ui;
-
-/** Everything that was skipped because it is empty or still TODO. */
-export const contentWarnings: readonly string[] = warnings;
-
-export const socialLinks = (
-  [
-    ["linkedin", "LinkedIn"],
-    ["github", "GitHub"],
-    ["youtube", "YouTube"],
-    ["telegram", "Telegram"],
-  ] as const
-)
-  .filter(([key]) => person.links[key])
-  .map(([key, label]) => ({ key, label, href: person.links[key] as string }));
-
-export const pdfPath = `/${raw.site.pdf.fileName}`;
+export type SiteClient = ReturnType<typeof getSiteClient>;

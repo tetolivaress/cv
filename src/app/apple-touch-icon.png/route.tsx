@@ -1,11 +1,12 @@
 import { ImageResponse } from "next/og";
-import { person } from "@/content";
+import { getContent } from "@/content";
 
 export const dynamic = "force-static";
 const size = { width: 180, height: 180 };
 
 
 export function GET() {
+  const { person } = getContent("en");
   return new ImageResponse(
     (
       <div

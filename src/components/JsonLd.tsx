@@ -1,18 +1,21 @@
-import { education, person, skills } from "@/content";
+import { getContent } from "@/content";
+import type { Locale } from "@/i18n/config";
+import { homePath } from "@/i18n/routes";
 import { getSiteUrl } from "@/lib/site-url";
 
-/** schema.org Person with sameAs links, rendered as JSON-LD on the home page. */
-export function JsonLd() {
-  const url = getSiteUrl();
+/** schema.org Person with sameAs links, rendered as JSON-LD on the home page (in the page's language). */
+export function JsonLd({ locale }: { locale: Locale }) {
+  const { person, skills, education } = getContent(locale);
+  const origin = getSiteUrl();
   const data = {
     "@context": "https://schema.org",
     "@type": "Person",
     name: person.name,
     jobTitle: person.title,
     description: person.summary,
-    url,
+    url: `${origin}${homePath(locale) === "/" ? "" : homePath(locale)}`,
     email: `mailto:${person.email}`,
-    image: person.photo ? `${url}${person.photo}` : undefined,
+    image: person.photo ? `${origin}${person.photo}` : undefined,
     address: { "@type": "PostalAddress", addressLocality: "Caracas", addressCountry: "VE" },
     sameAs: Object.values(person.links).filter(Boolean),
     knowsLanguage: person.languages.map((l) => l.name),

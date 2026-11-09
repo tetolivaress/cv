@@ -1,13 +1,15 @@
 import { Globe } from "lucide-react";
-import { formatDuration, formatYears, ui, type Experience } from "@/content";
+import { getContent, type Experience } from "@/content";
+import { formatDuration, formatYears, isPresent } from "@/content/format";
+import type { Locale } from "@/i18n/config";
 import { cn } from "@/lib/cn";
 import { remoteBadge, tag } from "./ui";
 
-function RemoteBadge() {
+function RemoteBadge({ label }: { label: string }) {
   return (
     <span className={remoteBadge}>
       <Globe size={13} aria-hidden="true" />
-      {ui.remote}
+      {label}
     </span>
   );
 }
@@ -16,10 +18,11 @@ function RemoteBadge() {
  * Pencil "TimelineItem": date column (≥768px) + rail dot + card. On phones the
  * dates move inside the card. The current role gets a filled, glowing dot.
  */
-export function TimelineItem({ job }: { job: Experience }) {
-  const dates = formatYears(job.start, job.end);
-  const duration = formatDuration(job.start, job.end);
-  const isCurrent = job.end === ui.present || /present/i.test(job.end ?? "");
+export function TimelineItem({ job, locale }: { job: Experience; locale: Locale }) {
+  const { ui } = getContent(locale);
+  const dates = formatYears(job.start, job.end, ui.present);
+  const duration = formatDuration(job.start, job.end, locale);
+  const isCurrent = isPresent(job.end);
   const title = job.company ?? job.role;
 
   return (
@@ -27,7 +30,7 @@ export function TimelineItem({ job }: { job: Experience }) {
       <div className="hidden w-[168px] shrink-0 flex-col items-start gap-2 pr-4 pt-7 md:flex">
         {dates && <p className="font-mono text-sm font-medium text-fg">{dates}</p>}
         {duration && <p className="text-[13px] text-fg-3">{duration}</p>}
-        {job.remote && <RemoteBadge />}
+        {job.remote && <RemoteBadge label={ui.remote} />}
       </div>
 
       <div className="relative min-w-0 flex-1 pb-5 pl-5 before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-line md:pb-6 md:pl-7">
@@ -46,7 +49,7 @@ export function TimelineItem({ job }: { job: Experience }) {
                   {[dates, duration].filter(Boolean).join(" · ")}
                 </p>
               )}
-              {job.remote && <RemoteBadge />}
+              {job.remote && <RemoteBadge label={ui.remote} />}
             </div>
           )}
           <header className="flex flex-col gap-0.5">
@@ -64,7 +67,7 @@ export function TimelineItem({ job }: { job: Experience }) {
             </ul>
           )}
           {job.stack.length > 0 && (
-            <ul className="flex flex-wrap gap-1.5" aria-label="Stack">
+            <ul className="flex flex-wrap gap-1.5" aria-label={ui.stackLabel}>
               {job.stack.map((item) => (
                 <li key={item} className={tag}>
                   {item}

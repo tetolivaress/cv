@@ -1,16 +1,18 @@
-import { eras, ui } from "@/content";
+import { getContent } from "@/content";
+import type { Locale } from "@/i18n/config";
 import { cn } from "@/lib/cn";
 import { ArrowGlyph } from "./ArrowGlyph";
 
 /** Pencil "Evolution": the stack eras strip, oldest to newest. */
-export function Evolution() {
+export function Evolution({ locale }: { locale: Locale }) {
+  const { eras, ui } = getContent(locale);
   const ordered = [...eras].reverse();
   const current = eras[0];
   return (
     <section aria-label={ui.stackEvolution} className="wrap">
       <p className="mb-3.5 font-mono text-xs uppercase text-fg-3">
         {ui.stackEvolution} · {ordered[0]?.from}
-        <ArrowGlyph />
+        <ArrowGlyph label={ui.to} />
         {new Date().getFullYear()}
       </p>
       <ol className="flex flex-col border-y border-line md:flex-row">
@@ -27,7 +29,7 @@ export function Evolution() {
               <span className="flex items-center gap-2">
                 <span className="font-mono text-xs uppercase text-accent-strong">
                   {era.from}
-                  <ArrowGlyph />
+                  <ArrowGlyph label={ui.to} />
                   {isNow ? ui.now : era.to}
                 </span>
                 {isNow && (

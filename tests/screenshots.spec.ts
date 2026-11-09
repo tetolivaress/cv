@@ -62,46 +62,54 @@ async function settle(page: Page) {
   });
 }
 
+const languages = [
+  { code: "en", home: "/", project: "/projects/caribito", certs: "/?certs=development", certsDialog: "Certifications", menuOpen: "Open menu", menu: "Menu", suffix: "" },
+  { code: "es", home: "/es", project: "/es/proyectos/caribito", certs: "/es?certs=development", certsDialog: "Certificaciones", menuOpen: "Abrir menú", menu: "Menú", suffix: "-es" },
+];
+
 for (const vp of viewports) {
   test.describe(vp.name, () => {
     test.use({ viewport: { width: vp.width, height: vp.height }, hasTouch: !!vp.mobile, isMobile: false });
 
-    test("home", async ({ page }) => {
-      await page.goto("/");
-      await settle(page);
-      const report = await overflowReport(page);
-      await page.screenshot({ path: `${dir}/home-${vp.name}.png`, fullPage: true });
-      expect(report.scrollWidth, `horizontal scroll: ${report.offenders.join(", ")}`).toBeLessThanOrEqual(report.clientWidth);
-      expect(report.offenders, "elements outside the viewport").toEqual([]);
-    });
-
-    test("project detail", async ({ page }) => {
-      await page.goto("/projects/caribito");
-      await settle(page);
-      const report = await overflowReport(page);
-      await page.screenshot({ path: `${dir}/project-${vp.name}.png`, fullPage: true });
-      expect(report.scrollWidth).toBeLessThanOrEqual(report.clientWidth);
-      expect(report.offenders).toEqual([]);
-    });
-
-    test("certifications modal", async ({ page }) => {
-      await page.goto("/?certs=development");
-      await expect(page.getByRole("dialog", { name: "Certifications" })).toBeVisible();
-      await settle(page);
-      await page.screenshot({ path: `${dir}/certs-${vp.name}.png` });
-      const box = await page.getByRole("dialog", { name: "Certifications" }).boundingBox();
-      expect(box!.x).toBeGreaterThanOrEqual(0);
-      expect(box!.x + box!.width).toBeLessThanOrEqual(vp.width + 1);
-      expect(box!.y + box!.height).toBeLessThanOrEqual(vp.height + 1);
-    });
-
-    if (vp.width < 1024) {
-      test("mobile menu", async ({ page }) => {
-        await page.goto("/");
-        await page.getByRole("button", { name: "Open menu" }).click();
-        await expect(page.getByRole("dialog", { name: "Menu" })).toBeVisible();
-        await page.screenshot({ path: `${dir}/menu-${vp.name}.png` });
+    for (const lang of languages) {
+      test(`home ${lang.code}`, async ({ page }) => {
+        await page.goto(lang.home);
+        await settle(page);
+        const report = await overflowReport(page);
+        await page.screenshot({ path: `${dir}/home${lang.suffix}-${vp.name}.png`, fullPage: true });
+        expect(report.scrollWidth, `horizontal scroll: ${report.offenders.join(", ")}`).toBeLessThanOrEqual(report.clientWidth);
+        expect(report.offenders, "elements outside the viewport").toEqual([]);
       });
+
+      test(`project detail ${lang.code}`, async ({ page }) => {
+        await page.goto(lang.project);
+        await settle(page);
+        const report = await overflowReport(page);
+        await page.screenshot({ path: `${dir}/project${lang.suffix}-${vp.name}.png`, fullPage: true });
+        expect(report.scrollWidth).toBeLessThanOrEqual(report.clientWidth);
+        expect(report.offenders).toEqual([]);
+      });
+
+      test(`certifications modal ${lang.code}`, async ({ page }) => {
+        await page.goto(lang.certs);
+        const dialog = page.getByRole("dialog", { name: lang.certsDialog });
+        await expect(dialog).toBeVisible();
+        await settle(page);
+        await page.screenshot({ path: `${dir}/certs${lang.suffix}-${vp.name}.png` });
+        const box = await dialog.boundingBox();
+        expect(box!.x).toBeGreaterThanOrEqual(0);
+        expect(box!.x + box!.width).toBeLessThanOrEqual(vp.width + 1);
+        expect(box!.y + box!.height).toBeLessThanOrEqual(vp.height + 1);
+      });
+
+      if (vp.width < 1024) {
+        test(`mobile menu ${lang.code}`, async ({ page }) => {
+          await page.goto(lang.home);
+          await page.getByRole("button", { name: lang.menuOpen }).click();
+          await expect(page.getByRole("dialog", { name: lang.menu })).toBeVisible();
+          await page.screenshot({ path: `${dir}/menu${lang.suffix}-${vp.name}.png` });
+        });
+      }
     }
   });
 }

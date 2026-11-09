@@ -1,13 +1,15 @@
 import Image from "next/image";
 import { ArrowLeft, ArrowUpRight, Play } from "lucide-react";
-import { projects, sections, t, ui, type Project } from "@/content";
-import { homeSectionPath } from "@/lib/section-nav";
+import { getContent, t, type Project } from "@/content";
+import type { Locale } from "@/i18n/config";
+import { projectPath, TUTORIALS_ID } from "@/i18n/routes";
 import { displayUrl } from "@/lib/site-url";
 import { SectionLink } from "./SectionLink";
 import { button, tag } from "./ui";
 
 /** Pencil "ProjectHero": breadcrumb, name, summary, CTAs, meta panel and cover. */
-export function ProjectHero({ project, index }: { project: Project; index: number }) {
+export function ProjectHero({ project, index, locale }: { project: Project; index: number; locale: Locale }) {
+  const { ui, projects, sections } = getContent(locale);
   const p = ui.project;
   const meta = [
     project.role && { key: p.role, value: project.role },
@@ -21,7 +23,7 @@ export function ProjectHero({ project, index }: { project: Project; index: numbe
       <div className="flex items-center justify-between gap-3">
         <SectionLink
           section={sections.projects.id}
-          href={homeSectionPath(sections.projects.id)}
+          href={sections.projects.href}
           className="flex h-11 items-center gap-1.5 text-base font-medium text-fg-2 hover:text-fg md:text-[15px]"
         >
           <ArrowLeft size={18} aria-hidden="true" />
@@ -46,8 +48,8 @@ export function ProjectHero({ project, index }: { project: Project; index: numbe
             </a>
             {project.videos.length > 0 && (
               <SectionLink
-                section="tutorials"
-                href={`/projects/${project.slug}/tutorials`}
+                section={TUTORIALS_ID}
+                href={projectPath(locale, project.slug, true)}
                 page="project"
                 className={`${button.secondary} w-full sm:w-auto`}
               >
@@ -88,7 +90,7 @@ export function ProjectHero({ project, index }: { project: Project; index: numbe
         <div className="relative aspect-[353/219] overflow-hidden rounded-2xl bg-surface-2 md:aspect-[2/1] md:rounded-3xl lg:aspect-[1200/552]">
           <Image
             src={project.cover}
-            alt={`${project.name} preview`}
+            alt={t(p.coverAlt, { name: project.name })}
             fill
             priority
             fetchPriority="high"

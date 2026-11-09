@@ -1,9 +1,11 @@
-import { sections, skills } from "@/content";
+import { getContent } from "@/content";
+import type { Locale } from "@/i18n/config";
 import { SectionHead } from "./SectionHead";
 import { SkillGroup } from "./SkillGroup";
 
 /** Pencil "Skills": skill groups as ruled rows. No percentage bars. */
-export function Skills() {
+export function Skills({ locale }: { locale: Locale }) {
+  const { sections, skills, ui } = getContent(locale);
   const s = sections.skills;
   return (
     <section id={s.id} aria-labelledby={`${s.id}-title`} className="wrap section-y">
@@ -17,7 +19,7 @@ export function Skills() {
       />
       <ul className="mt-8 border-t border-line md:mt-12">
         {skills.map(({ group, items }) => (
-          <SkillGroup key={group} group={group} items={items} />
+          <SkillGroup key={group} group={group} items={items} toolsLabel={ui.tools} />
         ))}
       </ul>
     </section>

@@ -1,12 +1,13 @@
 import Image from "next/image";
-import { ui, type Certification } from "@/content";
+import type { UiCopy } from "@/content/copy";
+import type { Certification } from "@/content/types";
 import { CertPaper } from "./CertPaper";
 import type { LightboxItem } from "./Lightbox";
 
 /** Turns certifications into lightbox slides: the real image when there is one, the paper placeholder otherwise. */
-export function certLightboxItems(certs: Certification[]): LightboxItem[] {
-  return certs.map((cert, i) => ({
-    key: `${cert.issuer}-${cert.name}-${i}`,
+export function certLightboxItems(certs: Certification[], ui: UiCopy): LightboxItem[] {
+  return certs.map((cert) => ({
+    key: cert.key,
     title: cert.name,
     meta: [cert.issuer, cert.date?.slice(0, 4)].filter(Boolean).join(" · "),
     action: cert.credentialUrl ? { href: cert.credentialUrl, label: ui.viewCredential } : undefined,
@@ -25,9 +26,9 @@ export function certLightboxItems(certs: Certification[]): LightboxItem[] {
   }));
 }
 
-export const certLightboxLabels = {
+export const certLightboxLabels = (ui: UiCopy) => ({
   dialog: ui.certs.lightboxLabel,
   close: ui.certs.closeLightbox,
   previous: ui.certs.previous,
   next: ui.certs.next,
-};
+});

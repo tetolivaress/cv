@@ -1,9 +1,10 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { currentPage, pushPath, scrollToSection, TOP } from "@/lib/section-nav";
+import { parsePath, projectPath, homePath } from "@/i18n/routes";
+import { pushPath, scrollToSection, TOP } from "@/lib/section-nav";
 
-/** Scrolls to the top and resets the address bar to the page's own URL (/ or /projects/<slug>). */
+/** Scrolls to the top and resets the address bar to the page's own URL (home or the project page). */
 export function BackToTop({ className, children }: { className?: string; children: ReactNode }) {
   return (
     <a
@@ -11,8 +12,8 @@ export function BackToTop({ className, children }: { className?: string; childre
       className={className}
       onClick={(event) => {
         event.preventDefault();
-        const parts = window.location.pathname.split("/").filter(Boolean);
-        const path = currentPage() === "project" ? `/${parts.slice(0, 2).join("/")}` : "/";
+        const route = parsePath(window.location.pathname);
+        const path = !route ? "/" : route.page === "project" ? projectPath(route.locale, route.slug) : homePath(route.locale);
         scrollToSection(TOP);
         pushPath(path);
       }}

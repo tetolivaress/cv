@@ -1,9 +1,9 @@
-import { t, ui } from "@/content";
+import { t } from "@/content/format";
 import { tag } from "./ui";
 
 /** Pencil "SkillGroup": group name + tool count, then the tools as tags. */
-export function SkillGroup({ group, items }: { group: string; items: string[] }) {
-  const count = t(ui.tools, { n: String(items.length).padStart(2, "0") });
+export function SkillGroup({ group, items, toolsLabel }: { group: string; items: string[]; toolsLabel: string }) {
+  const count = t(toolsLabel, { n: String(items.length).padStart(2, "0") });
   return (
     <li className="flex flex-col gap-3 border-b border-line py-5 md:flex-row md:gap-6 md:py-6">
       <div className="flex items-center gap-2.5 md:w-[180px] md:shrink-0 md:flex-col md:items-start md:gap-1 lg:w-[260px]">

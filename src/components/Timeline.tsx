@@ -1,9 +1,11 @@
-import { eras, experience, ui } from "@/content";
+import { getContent } from "@/content";
+import type { Locale } from "@/i18n/config";
 import { ArrowGlyph } from "./ArrowGlyph";
 import { TimelineItem } from "./TimelineItem";
 
 /** Experience grouped by stack era (Pencil "EraMarker" + "TimelineItem"), newest first. */
-export function Timeline() {
+export function Timeline({ locale }: { locale: Locale }) {
+  const { eras, experience, ui } = getContent(locale);
   return (
     <ol className="flex min-w-0 flex-1 flex-col">
       {eras.map((era) => {
@@ -21,17 +23,15 @@ export function Timeline() {
                 />
                 <p className="font-mono text-xs uppercase text-accent-strong">
                   {ui.eraPrefix} {era.id} · {era.from}
-                  <ArrowGlyph />
+                  <ArrowGlyph label={ui.to} />
                   {isNow ? ui.now : era.to}
                 </p>
-                <h3 className="mt-1 font-heading text-xl font-semibold tracking-[-0.5px] text-fg md:text-2xl">
-                  {era.label}
-                </h3>
+                <h3 className="mt-1 font-heading text-xl font-semibold tracking-[-0.5px] text-fg md:text-2xl">{era.label}</h3>
               </div>
             </div>
             <ol>
               {jobs.map((job, i) => (
-                <TimelineItem key={`${job.company ?? job.role}-${i}`} job={job} />
+                <TimelineItem key={`${job.company ?? job.role}-${i}`} job={job} locale={locale} />
               ))}
             </ol>
           </li>

@@ -2,9 +2,12 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { person, t, ui, type Project } from "@/content";
+import { t } from "@/content/format";
+import type { Project } from "@/content/types";
+import { TUTORIALS_ID } from "@/i18n/routes";
 import { cn } from "@/lib/cn";
 import { SectionHead } from "./SectionHead";
+import { useSite } from "./site/SiteProvider";
 import { VideoEmbed } from "./VideoEmbed";
 
 function totalMinutes(durations: (string | undefined)[]) {
@@ -19,6 +22,7 @@ function totalMinutes(durations: (string | undefined)[]) {
 
 /** Pencil "Tutorials": player (VideoPlayer) and playlist (VideoItem) for a project's YouTube videos. */
 export function ProjectTutorials({ project }: { project: Project }) {
+  const { ui, person } = useSite();
   const [active, setActive] = useState(0);
   const [autoplay, setAutoplay] = useState(false);
   const videos = project.videos;
@@ -27,7 +31,7 @@ export function ProjectTutorials({ project }: { project: Project }) {
   const p = ui.project;
 
   return (
-    <section id="tutorials" aria-labelledby="tutorials-title" className="wrap pb-[var(--space-section)] pt-10 md:pt-[72px]">
+    <section id={TUTORIALS_ID} aria-labelledby="tutorials-title" className="wrap pb-[var(--space-section)] pt-10 md:pt-[72px]">
       <SectionHead
         id="tutorials-title"
         label={p.tutorialsEyebrow}

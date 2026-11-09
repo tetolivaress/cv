@@ -2,17 +2,18 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useSyncExternalStore } from "react";
-import { ui } from "@/content";
 import { getTheme, setTheme, subscribeTheme, type Theme } from "@/lib/theme";
 import { cn } from "@/lib/cn";
+import { useSite } from "./site/SiteProvider";
 
-const options: { value: Theme; label: string; Icon: typeof Sun }[] = [
-  { value: "light", label: ui.themeLight, Icon: Sun },
-  { value: "dark", label: ui.themeDark, Icon: Moon },
-];
 
 /** Pencil "ThemeToggle": a segmented sun/moon switch. Saved in localStorage. */
 export function ThemeToggle({ className }: { className?: string }) {
+  const { ui } = useSite();
+  const options: { value: Theme; label: string; Icon: typeof Sun }[] = [
+    { value: "light", label: ui.themeLight, Icon: Sun },
+    { value: "dark", label: ui.themeDark, Icon: Moon },
+  ];
   // Server render has no theme; the inline head script already applied it to <html>.
   const theme = useSyncExternalStore(subscribeTheme, getTheme, () => null);
   return (

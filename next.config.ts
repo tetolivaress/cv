@@ -5,6 +5,10 @@ import { getSiteUrl } from "./src/lib/site-url";
 const nextConfig: NextConfig = {
   output: "export",
   reactStrictMode: true,
+  experimental: {
+    // Two root layouts (English and Spanish) need a global 404 page.
+    globalNotFound: true,
+  },
   env: {
     // Resolved once at build time so server and client agree on the origin.
     NEXT_PUBLIC_SITE_URL: getSiteUrl(),

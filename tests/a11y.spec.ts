@@ -7,6 +7,9 @@ const states: { name: string; path: string; open?: (page: Page) => Promise<void>
   { name: "home", path: "/" },
   { name: "project", path: "/projects/caribito" },
   { name: "certifications modal", path: "/?certs=all" },
+  { name: "home (es)", path: "/es" },
+  { name: "project (es)", path: "/es/proyectos/caribito" },
+  { name: "certifications modal (es)", path: "/es?certs=all" },
   {
     name: "certificate lightbox",
     path: "/?certs=data",

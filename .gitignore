@@ -17,3 +17,6 @@ test-results
 playwright-report
 lighthouse
 screenshots
+
+public/cv-es.pdf
+public/Jesus-Olivares-CV-ES.pdf

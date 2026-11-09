@@ -1,33 +1,32 @@
 "use client";
 
-import { sectionOrder, sections } from "@/content";
+import { useMemo } from "react";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { cn } from "@/lib/cn";
-import { homeSectionPath } from "@/lib/section-nav";
 import { SectionLink } from "./SectionLink";
-
-const ids = sectionOrder.map((key) => sections[key].id);
+import { useSite } from "./site/SiteProvider";
 
 /** Pencil "SideNav (sticky)": section index in the left margin, only on ≥1920px screens. */
 export function SideNav() {
+  const { nav, ui } = useSite();
+  const ids = useMemo(() => nav.map((s) => s.id), [nav]);
   const active = useActiveSection(ids);
   return (
     <nav
-      aria-label="Section index"
+      aria-label={ui.sectionIndex}
       className={cn(
         "fixed left-10 top-1/2 z-30 hidden w-[200px] -translate-y-1/2 transition-opacity duration-200 3xl:block",
         active ? "opacity-100" : "pointer-events-none opacity-0",
       )}
     >
       <ul className="flex flex-col gap-0.5">
-        {sectionOrder.map((key) => {
-          const section = sections[key];
+        {nav.map((section) => {
           const isActive = active === section.id;
           return (
-            <li key={key}>
+            <li key={section.key}>
               <SectionLink
                 section={section.id}
-                href={homeSectionPath(section.id)}
+                href={section.href}
                 aria-current={isActive ? "location" : undefined}
                 className="group flex h-9 items-center gap-3"
               >

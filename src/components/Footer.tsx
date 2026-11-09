@@ -1,13 +1,16 @@
 import { ArrowUp } from "lucide-react";
-import { person, sections, t, ui } from "@/content";
+import { getContent, t } from "@/content";
+import type { Locale } from "@/i18n/config";
 import { BackToTop } from "./BackToTop";
 import { CopyEmail } from "./CopyEmail";
 import { DownloadCv } from "./DownloadCv";
 import { SocialLinks } from "./SocialLinks";
 
 /** Pencil "Contact": dark panel with the call to action, email, CV, socials and the footer bar. */
-export function Footer() {
-  const s = sections.contact;
+export function Footer({ locale }: { locale: Locale }) {
+  const c = getContent(locale);
+  const { person, ui } = c;
+  const s = c.sections.contact;
   return (
     <footer
       id={s.id}
@@ -38,8 +41,8 @@ export function Footer() {
             </div>
           </div>
           <div className="flex flex-col gap-4 lg:items-end">
-            <DownloadCv className="w-full lg:w-auto" />
-            <SocialLinks onPanel />
+            <DownloadCv pdf={c.pdf} ui={ui} className="w-full lg:w-auto" />
+            <SocialLinks links={c.socialLinks} onPanel />
           </div>
         </div>
 

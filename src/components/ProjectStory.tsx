@@ -1,10 +1,11 @@
 import { ArrowRight } from "lucide-react";
-import { ui, type ProjectStory as Story } from "@/content";
+import type { ProjectStory as Story } from "@/content";
+import type { UiCopy } from "@/content/copy";
 import { cn } from "@/lib/cn";
 import { SectionHead } from "./SectionHead";
 
 /** Pencil "Story": Problem → Solution → Result case study. Only steps that have copy are shown. */
-export function ProjectStory({ story }: { story: Story }) {
+export function ProjectStory({ story, ui }: { story: Story; ui: UiCopy }) {
   const p = ui.project;
   const steps = (
     [

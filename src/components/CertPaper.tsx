@@ -1,5 +1,9 @@
-import { issuerStyle, person, ui, type Certification } from "@/content";
+"use client";
+
+import type { Certification } from "@/content/types";
+import { issuerStyle } from "@/content/format";
 import { cn } from "@/lib/cn";
+import { useSite } from "./site/SiteProvider";
 
 /**
  * Stylized certificate used when a certification has no image yet (Pencil
@@ -8,7 +12,8 @@ import { cn } from "@/lib/cn";
  * container through container-query units.
  */
 export function CertPaper({ cert, size = "sm", className }: { cert: Certification; size?: "sm" | "lg"; className?: string }) {
-  const { color } = issuerStyle(cert.issuer);
+  const { issuers, ui, person } = useSite();
+  const { color } = issuerStyle(issuers, cert.issuer);
   if (size === "sm") {
     return (
       <div
@@ -24,10 +29,7 @@ export function CertPaper({ cert, size = "sm", className }: { cert: Certificatio
         <span className="h-[3px] w-[110px] rounded-sm bg-[#dfe5e2]" />
         <span className="mt-auto flex items-end justify-between">
           <span className="h-0.5 w-[52px] bg-[#c5cfca]" />
-          <span
-            className="size-[18px] rounded-full border-[1.5px]"
-            style={{ borderColor: color, backgroundColor: `${color}22` }}
-          />
+          <span className="size-[18px] rounded-full border-[1.5px]" style={{ borderColor: color, backgroundColor: `${color}22` }} />
         </span>
       </div>
     );
@@ -51,10 +53,7 @@ export function CertPaper({ cert, size = "sm", className }: { cert: Certificatio
             <span className="h-[1.5px] w-[26.7cqw] bg-[#c5cfca]" />
             <span className="font-mono text-[max(9px,1.84cqw)] text-[#5f6d68]">{cert.issuer}</span>
           </span>
-          <span
-            className="size-[12cqw] rounded-full border-2"
-            style={{ borderColor: color, backgroundColor: `${color}22` }}
-          />
+          <span className="size-[12cqw] rounded-full border-2" style={{ borderColor: color, backgroundColor: `${color}22` }} />
         </span>
       </div>
     </div>

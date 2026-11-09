@@ -3,14 +3,16 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useMemo, useState } from "react";
-import { ui, type Project } from "@/content";
+import type { Project } from "@/content/types";
 import type { LightboxItem } from "./Lightbox";
 import { SectionHead } from "./SectionHead";
+import { useSite } from "./site/SiteProvider";
 
 const Lightbox = dynamic(() => import("./Lightbox").then((m) => m.Lightbox), { ssr: false });
 
 /** Pencil "Gallery": screenshots (swipe carousel on phones, 3-column grid from 768px) with a lightbox. */
 export function ProjectGallery({ project }: { project: Project }) {
+  const { ui } = useSite();
   const [index, setIndex] = useState<number | null>(null);
   const p = ui.project;
   const slides = useMemo<LightboxItem[]>(

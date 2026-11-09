@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { scrollToSection, sectionFromPath, TOP, type PageKind } from "@/lib/section-nav";
+import { scrollToSection, sectionIdFromPath, TOP, type PageKind } from "@/lib/section-nav";
 
 /**
  * Makes clean section URLs work: on load it scrolls to the section named in the
@@ -18,7 +18,7 @@ export function SectionRouter({ page, initial }: { page: PageKind; initial?: str
   useEffect(() => {
     // Run after the browser's own scroll restoration for the history entry, which would otherwise cut our scroll short.
     const onPopState = () =>
-      requestAnimationFrame(() => scrollToSection(sectionFromPath(window.location.pathname, page), { focus: false }));
+      requestAnimationFrame(() => scrollToSection(sectionIdFromPath(window.location.pathname), { focus: false }));
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, [page]);

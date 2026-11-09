@@ -1,16 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { ui, type Project } from "@/content";
+import type { Project } from "@/content";
+import type { UiCopy } from "@/content/copy";
+import type { Locale } from "@/i18n/config";
+import { projectPath } from "@/i18n/routes";
 import { cn } from "@/lib/cn";
 import { cardLift } from "./ui";
 
-function NavCard({ project, direction }: { project: Project; direction: "previous" | "next" }) {
+function NavCard({ project, direction, locale, ui }: { project: Project; direction: "previous" | "next"; locale: Locale; ui: UiCopy }) {
   const next = direction === "next";
   const Arrow = next ? ArrowRight : ArrowLeft;
   return (
     <Link
-      href={`/projects/${project.slug}`}
+      href={projectPath(locale, project.slug)}
       // No viewport prefetch: keeps the critical path of project pages lean (static pages load fast on click anyway).
       prefetch={false}
       rel={next ? "next" : "prev"}
@@ -38,12 +41,12 @@ function NavCard({ project, direction }: { project: Project; direction: "previou
 }
 
 /** Pencil "ProjectNav": previous / next project (wraps around). */
-export function ProjectNav({ previous, next }: { previous: Project; next: Project }) {
+export function ProjectNav({ previous, next, locale, ui }: { previous: Project; next: Project; locale: Locale; ui: UiCopy }) {
   return (
-    <nav aria-label="More projects" className="wrap pb-[var(--space-section)] pt-[calc(var(--space-section)/2)]">
+    <nav aria-label={ui.project.moreProjects} className="wrap pb-[var(--space-section)] pt-[calc(var(--space-section)/2)]">
       <div className="flex flex-col gap-4 sm:flex-row">
-        <NavCard project={previous} direction="previous" />
-        <NavCard project={next} direction="next" />
+        <NavCard project={previous} direction="previous" locale={locale} ui={ui} />
+        <NavCard project={next} direction="next" locale={locale} ui={ui} />
       </div>
     </nav>
   );

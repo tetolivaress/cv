@@ -1,7 +1,9 @@
+"use client";
+
 import type { MouseEventHandler } from "react";
-import { person } from "@/content";
-import { TOP } from "@/lib/section-nav";
+import { homePath, TOP } from "@/i18n/routes";
 import { SectionLink } from "./SectionLink";
+import { useSite } from "./site/SiteProvider";
 
 interface Props {
   onClick?: MouseEventHandler<HTMLAnchorElement>;
@@ -10,10 +12,11 @@ interface Props {
 
 /** Pencil "Logo": monogram + name (short name below 1280px). Goes to the top of the home page. */
 export function Logo({ onClick, onScrollInPlace }: Props) {
+  const { person, locale } = useSite();
   return (
     <SectionLink
       section={TOP}
-      href="/"
+      href={homePath(locale)}
       onClick={onClick}
       onScrollInPlace={onScrollInPlace}
       className="flex h-11 items-center gap-2.5 rounded-lg"
