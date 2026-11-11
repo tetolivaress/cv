@@ -7,13 +7,18 @@ import { SectionLink } from "./SectionLink";
 import { SocialLinks } from "./SocialLinks";
 import { badge, button } from "./ui";
 
-/** Pencil "Hero": name, title, tagline, facts, CTAs and photo with the "currently at" card. */
-export function Hero({ locale }: { locale: Locale }) {
+/**
+ * Pencil "Hero": name, title, tagline, facts, CTAs and photo with the "currently at" card.
+ * `embedded`: inside the 3D view's dialog, where the page already has its h1 and the plain hero's ids.
+ */
+export function Hero({ locale, embedded = false }: { locale: Locale; embedded?: boolean }) {
+  const Name = embedded ? "h2" : "h1";
+  const nameId = embedded ? "hero-name-3d" : "hero-name";
   const c = getContent(locale);
   const { person, ui, currentJob } = c;
   const location = [person.location, person.workMode].filter(Boolean).join(" · ");
   return (
-    <section aria-labelledby="hero-name" className="wrap pb-[var(--space-hero-bottom)] pt-[var(--space-hero-top)]">
+    <section aria-labelledby={nameId} className="wrap pb-[var(--space-hero-bottom)] pt-[var(--space-hero-top)]">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:gap-10 lg:gap-20">
         {person.photo && (
           <div className="relative size-28 shrink-0 md:order-2 md:h-[312px] md:w-[260px] lg:h-[432px] lg:w-[360px] wide:h-[480px] wide:w-[400px]">
@@ -54,9 +59,9 @@ export function Hero({ locale }: { locale: Locale }) {
           )}
 
           <div className="flex flex-col gap-2 md:gap-3">
-            <h1 id="hero-name" className="font-heading text-display leading-none font-semibold tracking-[-0.036em] text-fg">
+            <Name id={nameId} className="font-heading text-display leading-none font-semibold tracking-[-0.036em] text-fg">
               {person.name}
-            </h1>
+            </Name>
             <p className="font-heading text-hero-title leading-[1.3] font-medium text-fg">{person.title}</p>
           </div>
 

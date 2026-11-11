@@ -5,7 +5,7 @@ import { ArrowUpRight, X } from "lucide-react";
 import { useRef } from "react";
 import { homePath, TOP } from "@/i18n/routes";
 import { cn } from "@/lib/cn";
-import { pushPath, scrollToSection } from "@/lib/section-nav";
+import { pushPath, scrollToSection, type PageKind } from "@/lib/section-nav";
 import { DownloadCv } from "./DownloadCv";
 import { LanguageSwitch } from "./LanguageSwitch";
 import { Logo } from "./Logo";
@@ -14,6 +14,7 @@ import { useSite } from "./site/SiteProvider";
 import { SocialLinks } from "./SocialLinks";
 import { ThemeToggle } from "./ThemeToggle";
 import { button } from "./ui";
+import { ViewSwitch } from "./ViewSwitch";
 
 export interface MobileMenuSheetProps {
   open: boolean;
@@ -21,6 +22,7 @@ export interface MobileMenuSheetProps {
   /** Where focus goes when the sheet closes (the hamburger button). */
   returnFocus: () => void;
   active: string | null;
+  page: PageKind;
 }
 
 /**
@@ -28,7 +30,7 @@ export interface MobileMenuSheetProps {
  * theme, CV and socials. Loaded on demand by MobileMenu, so Radix is not in the
  * initial bundle.
  */
-export default function MobileMenuSheet({ open, onOpenChange, returnFocus, active }: MobileMenuSheetProps) {
+export default function MobileMenuSheet({ open, onOpenChange, returnFocus, active, page }: MobileMenuSheetProps) {
   const site = useSite();
   const { ui } = site;
   // Section picked on the home page: scroll to it once the sheet has closed and unlocked scrolling.
@@ -100,6 +102,12 @@ export default function MobileMenuSheet({ open, onOpenChange, returnFocus, activ
             </ul>
 
             <div className="mt-auto flex flex-col gap-4 pb-4 pt-8">
+              {page === "home" && (
+                <div className="flex items-center justify-between">
+                  <span className="text-base font-medium text-fg-2">{ui.view}</span>
+                  <ViewSwitch />
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <span className="text-base font-medium text-fg-2">{ui.language}</span>
                 <LanguageSwitch />

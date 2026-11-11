@@ -6,15 +6,22 @@ import { CopyEmail } from "./CopyEmail";
 import { DownloadCv } from "./DownloadCv";
 import { SocialLinks } from "./SocialLinks";
 
-/** Pencil "Contact": dark panel with the call to action, email, CV, socials and the footer bar. */
-export function Footer({ locale }: { locale: Locale }) {
+/**
+ * Pencil "Contact": dark panel with the call to action, email, CV, socials and the footer bar.
+ * `page` marks the home page's footer, which the 3D view hides (contact is a card there).
+ * `embedded`: the same panel inside the 3D view's dialog (no landmark, no section id, no "back to top").
+ */
+export function Footer({ locale, page, embedded = false }: { locale: Locale; page?: string; embedded?: boolean }) {
   const c = getContent(locale);
   const { person, ui } = c;
   const s = c.sections.contact;
+  const Panel = embedded ? "section" : "footer";
+  const titleId = embedded ? `${s.id}-title-3d` : `${s.id}-title`;
   return (
-    <footer
-      id={s.id}
-      aria-labelledby={`${s.id}-title`}
+    <Panel
+      id={embedded ? undefined : s.id}
+      data-site-footer={embedded ? undefined : (page ?? "")}
+      aria-labelledby={titleId}
       className="on-panel bg-panel pb-[max(24px,env(safe-area-inset-bottom))] pt-[var(--space-section)] text-on-panel md:pb-8"
     >
       <div className="wrap flex flex-col gap-12 md:gap-20">
@@ -24,7 +31,7 @@ export function Footer({ locale }: { locale: Locale }) {
               {s.index} — {s.eyebrow}
             </p>
             <h2
-              id={`${s.id}-title`}
+              id={titleId}
               className="max-w-[760px] font-heading text-contact leading-[1.02] font-semibold tracking-[-0.033em] text-on-panel"
             >
               {s.title}
@@ -50,12 +57,14 @@ export function Footer({ locale }: { locale: Locale }) {
           <p className="text-base text-on-panel-muted md:text-sm">
             {t(ui.footer, { year: new Date().getFullYear(), name: person.name })}
           </p>
+          {!embedded && (
           <BackToTop className="flex h-11 w-fit items-center gap-1.5 text-base font-medium text-on-panel hover:text-accent md:text-sm">
             {ui.backToTop}
             <ArrowUp size={16} aria-hidden="true" />
           </BackToTop>
+          )}
         </div>
       </div>
-    </footer>
+    </Panel>
   );
 }

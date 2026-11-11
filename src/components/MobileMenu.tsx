@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { Menu } from "lucide-react";
 import { useRef, useState } from "react";
+import type { PageKind } from "@/lib/section-nav";
 import { useSite } from "./site/SiteProvider";
 import { button } from "./ui";
 
@@ -11,10 +12,11 @@ const MobileMenuSheet = dynamic(loadSheet, { ssr: false });
 
 interface Props {
   active: string | null;
+  page: PageKind;
 }
 
 /** Hamburger button. The sheet (and Radix) is fetched on hover/touch/focus, before the click lands. */
-export function MobileMenu({ active }: Props) {
+export function MobileMenu({ active, page }: Props) {
   const { ui } = useSite();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -46,6 +48,7 @@ export function MobileMenu({ active }: Props) {
           onOpenChange={setOpen}
           returnFocus={() => buttonRef.current?.focus()}
           active={active}
+          page={page}
         />
       )}
     </>

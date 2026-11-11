@@ -11,6 +11,8 @@ export default defineConfig({
   fullyParallel: true,
   reporter: [["list"]],
   timeout: 60_000,
+  // The 3D view runs on the software rasterizer in headless runs, which keeps the main thread busy.
+  expect: { timeout: 15_000 },
   use: {
     baseURL: `http://localhost:${PORT}`,
     ...devices["Desktop Chrome"],

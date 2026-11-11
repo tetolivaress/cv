@@ -214,6 +214,30 @@ The Download buttons are plain `<a download>` links, so they work instantly, inc
 
 The modal has filter chips, a search box and a lightbox with keyboard arrows. It's a full-screen sheet on phones and a centered modal (max 1100 px) from 768 px up. Radix handles the focus trap, Esc to close, the body scroll lock and `aria-labelledby`. The URL stays in sync, so `/?certs=english` opens the modal already filtered.
 
+### 2D / 3D view
+
+The header (and the mobile menu) has a **2D | 3D** switch on the home page, saved in `localStorage` (`view`). The server
+always renders the plain site; three.js, react-three-fiber, drei and react-spring are downloaded only when 3D is chosen.
+
+- `src/lib/view-mode.ts`: the saved choice and the inline head script that applies it before first paint.
+In 3D the whole page is in the ring, one card each: the hero ("Intro"), the stack evolution, the six sections and
+contact. The plain hero and the contact footer are hidden (`[data-plain-only]`, `[data-site-footer="home"]`).
+
+- `src/components/HomeView.tsx`: renders the page stacked (plain) or hands every part of it to the 3D track.
+- `src/components/three/Track3D.tsx`: a tall scroll track with a stage pinned under the header. Each step of the track is
+  an element with the section's id, so header links, clean URLs and the active-section highlight work as on the plain
+  page. The front card's section is described in HTML and opens in full (the same server-rendered section) in a dialog.
+  Vertical scrolling turns the ring; so do a sideways wheel or trackpad swipe, a finger swipe across the stage and the
+  left/right arrow keys, all by moving the page's own scroll.
+- `src/components/three/Scene3D.tsx`: the ring of cards. Page scroll turns it (react-spring). Each card is a
+  `MeshPortalMaterial` window onto its own small world; hover drives the shaders in `shaders.ts` (warped backdrop,
+  glow around the card) and the distortion of the floating shapes. Opening a section blends its portal to full screen.
+- `src/content/panels3d.ts`: the few lines drawn inside each card, and each card's colour and shape.
+- Text inside the canvas uses the Inter files in `public/fonts` (troika cannot read the woff2 that `next/font` serves).
+- Everything that can suspend inside the canvas (card text waiting for its font) sits under a `Suspense` there. Left to
+  bubble, it suspends the page around the canvas: the track is hidden for a moment and the scroll position is lost.
+- Without WebGL the plain site is shown. With "reduce motion" the ring jumps instead of springing and the shaders stay still.
+
 ### Theme
 
 Light and dark tokens come from the Pencil variables (`src/app/globals.css`). The theme defaults to the system preference and a manual choice is saved in `localStorage`. An inline script applies it before the first paint, so the page never flashes the wrong theme.

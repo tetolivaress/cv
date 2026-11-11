@@ -176,6 +176,13 @@
   }
 }
 
+/* A saved "3D" choice (set on <html> by the inline head script) hides the plain sections before first paint;
+   once the page hydrates they are replaced by the 3D track. */
+html[data-view="3d"] [data-page="home"] [data-plain-only],
+html[data-view="3d"] [data-site-footer="home"] {
+  display: none;
+}
+
 /* ───────────── Layout helpers ───────────── */
 @utility wrap {
   width: 100%;

@@ -1,13 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SECTIONS_EVENT } from "@/lib/view-mode";
 
 /**
  * Returns the id of the section currently crossing a line ~40% down the
  * viewport, or null above the first section. One IntersectionObserver per caller.
+ * Switching between the plain and the 3D view replaces the section elements, so
+ * the observer is rebuilt when that happens.
  */
 export function useActiveSection(ids: readonly string[]) {
   const [active, setActive] = useState<string | null>(null);
+  const [sectionsVersion, setSectionsVersion] = useState(0);
+
+  useEffect(() => {
+    const onChange = () => setSectionsVersion((v) => v + 1);
+    window.addEventListener(SECTIONS_EVENT, onChange);
+    return () => window.removeEventListener(SECTIONS_EVENT, onChange);
+  }, []);
 
   useEffect(() => {
     const elements = ids.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => !!el);
@@ -27,7 +37,7 @@ export function useActiveSection(ids: readonly string[]) {
     );
     elements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, [ids]);
+  }, [ids, sectionsVersion]);
 
   return active;
 }

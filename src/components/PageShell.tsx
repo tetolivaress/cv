@@ -38,7 +38,7 @@ export function PageShell({ children, locale, page, path, initialSection }: Prop
           {children}
         </main>
       </div>
-      <Footer locale={locale} />
+      <Footer locale={locale} page={page} />
     </SiteProvider>
   );
 }
