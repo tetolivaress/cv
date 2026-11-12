@@ -127,6 +127,32 @@ test("phones get the switch in the menu", async ({ page }) => {
   await expect(page.getByRole("region", { name: "CV sections in 3D" }).getByRole("button", { name: /^Open / })).toBeVisible();
 });
 
+test.describe("Android phones", () => {
+  test.use({
+    viewport: { width: 393, height: 852 },
+    userAgent: "Mozilla/5.0 (Linux; Android 13; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+  });
+
+  test("get the lite scene: flat cards, no portals", async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("view", "3d"));
+    await page.goto("/");
+    const region = page.getByRole("region", { name: "CV sections in 3D" });
+    await expect(page.locator("main canvas")).toBeVisible();
+    await expect(page.locator("[data-scene]")).toHaveAttribute("data-scene", "lite");
+    await expect(region.getByRole("button", { name: /^Open / })).toBeVisible();
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: "screenshots/view3d-android-lite.png" });
+    await region.getByRole("button", { name: /^Open / }).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+  });
+});
+
+test("everything else gets the full scene with portals", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("view", "3d"));
+  await page.goto("/");
+  await expect(page.locator("[data-scene]")).toHaveAttribute("data-scene", "full");
+});
+
 test("project pages have no view switch", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/projects/caribito");

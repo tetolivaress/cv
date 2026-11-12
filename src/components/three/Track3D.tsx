@@ -23,6 +23,9 @@ const subscribeReducedMotion = (callback: () => void) => {
   media.addEventListener("change", callback);
   return () => media.removeEventListener("change", callback);
 };
+/** Android phones (their browsers say "Android … Mobile"; tablets leave "Mobile" out) get the lite scene. */
+const subscribeNever = () => () => {};
+const getLite = () => /Android/i.test(navigator.userAgent) && /Mobile/i.test(navigator.userAgent);
 const getReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 interface Props {
@@ -53,6 +56,7 @@ export default function Track3D({ panels, sections }: Props) {
   const [footerOut, setFooterOut] = useState(false);
   const theme = useSyncExternalStore(subscribeTheme, getTheme, () => "light" as Theme);
   const reducedMotion = useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => false);
+  const lite = useSyncExternalStore(subscribeNever, getLite, () => false);
 
   // Scroll position → position in cards.
   useEffect(() => {
@@ -196,7 +200,7 @@ export default function Track3D({ panels, sections }: Props) {
       <div ref={stage} className="sticky top-[var(--header-h)] h-(--stage) touch-pan-y overflow-hidden">
         {/* The plain hero (and its h1) is hidden in this view. */}
         <h1 className="sr-only">{person.name}</h1>
-        <div className="absolute inset-0">
+        <div className="absolute inset-0" data-scene={lite ? "lite" : "full"}>
           <Scene3D
             panels={panels}
             progress={progress}
@@ -204,6 +208,7 @@ export default function Track3D({ panels, sections }: Props) {
             open={open}
             palette={PALETTES[theme]}
             reducedMotion={reducedMotion}
+            lite={lite}
             paused={!inView}
             onSelect={goTo}
             onOpen={setOpen}

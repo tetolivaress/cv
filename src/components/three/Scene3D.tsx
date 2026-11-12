@@ -5,7 +5,7 @@ import { Float, MeshDistortMaterial, MeshPortalMaterial, Text, useCursor } from 
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
-import { haloFragment, passUv, worldFragment } from "./shaders";
+import { flatFragment, haloFragment, passUv, worldFragment } from "./shaders";
 import type { Panel3D, Shape3D } from "./types";
 
 const FOV = 35;
@@ -34,19 +34,22 @@ interface SceneProps {
   reducedMotion: boolean;
   /** Stop rendering while the stage is off screen. */
   paused: boolean;
+  /** Low-power devices (Android phones): flat cards with no portal, no floating shapes and no noise in the shaders. */
+  lite: boolean;
   onSelect: (index: number) => void;
   onOpen: (index: number) => void;
 }
 
 /** The WebGL part of the 3D view: a ring of portal cards that turns with the page scroll. */
 export default function Scene3D({ paused, ...props }: SceneProps) {
+  const { lite } = props;
   return (
     <Canvas
       flat
-      dpr={[1, 1.5]}
+      dpr={lite ? 1 : [1, 1.5]}
       frameloop={paused ? "never" : "always"}
       camera={{ fov: FOV, position: [0, 0, 10], near: 0.1, far: 100 }}
-      gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
+      gl={{ alpha: true, antialias: !lite, powerPreference: "high-performance" }}
       aria-hidden="true"
     >
       {/* Anything that suspends in here (a card's text waiting for its font) must stop at this boundary: left to bubble,
@@ -70,7 +73,7 @@ function useLayout() {
   }, [size.width, size.height]);
 }
 
-function Ring({ panels, progress, active, open, palette, reducedMotion, onSelect, onOpen }: Omit<SceneProps, "paused">) {
+function Ring({ panels, progress, active, open, palette, reducedMotion, lite, onSelect, onOpen }: Omit<SceneProps, "paused">) {
   const count = panels.length;
   const step = (Math.PI * 2) / count;
   // Cards meet edge to edge at CARD_W / (2 tan(π/n)); the extra leaves a gap between them.
@@ -109,6 +112,7 @@ function Ring({ panels, progress, active, open, palette, reducedMotion, onSelect
             open={open === i}
             palette={palette}
             reducedMotion={reducedMotion}
+            lite={lite}
             onClick={() => (active === i ? onOpen(i) : onSelect(i))}
           />
         ))}
@@ -147,10 +151,11 @@ interface CardProps {
   open: boolean;
   palette: Palette;
   reducedMotion: boolean;
+  lite: boolean;
   onClick: () => void;
 }
 
-function Card({ panel, angle, radius, ringRotation, active, open, palette, reducedMotion, onClick }: CardProps) {
+function Card({ panel, angle, radius, ringRotation, active, open, palette, reducedMotion, lite, onClick }: CardProps) {
   const [hovered, setHovered] = useState(false);
   useCursor(hovered);
   const group = useRef<THREE.Group>(null);
@@ -164,7 +169,7 @@ function Card({ panel, angle, radius, ringRotation, active, open, palette, reduc
     () =>
       new THREE.ShaderMaterial({
         vertexShader: passUv,
-        fragmentShader: worldFragment,
+        fragmentShader: lite ? flatFragment : worldFragment,
         uniforms: {
           uTime: { value: 0 },
           uHover: { value: 0 },
@@ -173,7 +178,7 @@ function Card({ panel, angle, radius, ringRotation, active, open, palette, reduc
           uTint: { value: new THREE.Color() },
         },
       }),
-    [],
+    [lite],
   );
   const halo = useMemo(
     () =>
@@ -182,6 +187,7 @@ function Card({ panel, angle, radius, ringRotation, active, open, palette, reduc
         fragmentShader: haloFragment,
         transparent: true,
         depthWrite: false,
+        defines: lite ? { LITE: "" } : {},
         uniforms: {
           uTime: { value: 0 },
           uHover: { value: 0 },
@@ -192,7 +198,7 @@ function Card({ panel, angle, radius, ringRotation, active, open, palette, reduc
           uRadius: { value: CARD_R },
         },
       }),
-    [],
+    [lite],
   );
   useEffect(
     () => () => {
@@ -242,6 +248,26 @@ function Card({ panel, angle, radius, ringRotation, active, open, palette, reduc
 
   const textX = -CARD_W / 2 + 0.26;
   const textW = CARD_W - 0.52;
+  /** The card's text: inside the portal's world, or (lite) straight on the card's face. The card shows at once; the text joins when its glyphs are ready. */
+  const text = (flat: boolean) => {
+    const z = flat ? 0.01 : -0.05;
+    return (
+      <Suspense fallback={null}>
+        <Text font={FONT_BOLD} position={[CARD_W / 2 - 0.1, -CARD_H / 2 + 0.05, flat ? 0.005 : -1.6]} fontSize={flat ? 1.5 : 2.1} anchorX="right" anchorY="bottom" color={panel.tint} fillOpacity={0.1}>
+          {panel.index}
+        </Text>
+        <Text font={FONT_BOLD} position={[textX, CARD_H / 2 - 0.3, z]} fontSize={0.105} letterSpacing={0.12} anchorX="left" anchorY="top" color={panel.tint}>
+          {[panel.index, panel.eyebrow.toUpperCase()].filter(Boolean).join(" — ")}
+        </Text>
+        <Text font={FONT_BOLD} position={[textX, CARD_H / 2 - 0.56, z]} fontSize={0.36} letterSpacing={-0.03} lineHeight={1.02} maxWidth={textW} anchorX="left" anchorY="top" color={palette.text}>
+          {panel.nav}
+        </Text>
+        <Text font={FONT_REGULAR} position={[textX, -CARD_H / 2 + 0.3, z]} fontSize={0.118} lineHeight={1.75} maxWidth={textW} anchorX="left" anchorY="bottom" color={palette.muted}>
+          {panel.lines.join("\n")}
+        </Text>
+      </Suspense>
+    );
+  };
   return (
     <group ref={group} position={[Math.sin(angle) * radius, 0, Math.cos(angle) * radius]} rotation-y={angle}>
       <animated.group scale={spring.scale}>
@@ -250,6 +276,7 @@ function Card({ panel, angle, radius, ringRotation, active, open, palette, reduc
         </mesh>
         <mesh
           geometry={geometry}
+          {...(lite ? { material: world } : {})}
           onClick={(event) => {
             event.stopPropagation();
             onClick();
@@ -264,37 +291,26 @@ function Card({ panel, angle, radius, ringRotation, active, open, palette, reduc
           }}
           onPointerMove={onMove}
         >
-          <MeshPortalMaterial
-            ref={(material) => {
-              portal.current = material as unknown as { blend: number } | null;
-            }}
-            blur={0}
-            resolution={256}
-          >
-            <ambientLight intensity={1.4} />
-            <directionalLight position={[3, 4, 5]} intensity={2.2} />
-            <pointLight position={[-2, -1, 1]} intensity={12} color={panel.tint} />
-            <mesh position-z={-9} material={world}>
-              <planeGeometry args={[60, 60]} />
-            </mesh>
-            <Shapes shape={panel.shape} tint={panel.tint} hover={spring.hover} still={reducedMotion} />
-            {/* The card and its world show at once; the text joins when its glyphs are ready. */}
-            <Suspense fallback={null}>
-              <Text font={FONT_BOLD} position={[CARD_W / 2 - 0.1, -CARD_H / 2 + 0.05, -1.6]} fontSize={2.1} anchorX="right" anchorY="bottom" color={panel.tint} fillOpacity={0.1}>
-                {panel.index}
-              </Text>
-              <Text font={FONT_BOLD} position={[textX, CARD_H / 2 - 0.3, -0.05]} fontSize={0.105} letterSpacing={0.12} anchorX="left" anchorY="top" color={panel.tint}>
-                {[panel.index, panel.eyebrow.toUpperCase()].filter(Boolean).join(" — ")}
-              </Text>
-              <Text font={FONT_BOLD} position={[textX, CARD_H / 2 - 0.56, -0.05]} fontSize={0.36} letterSpacing={-0.03} lineHeight={1.02} maxWidth={textW} anchorX="left" anchorY="top" color={palette.text}>
-                {panel.nav}
-              </Text>
-              <Text font={FONT_REGULAR} position={[textX, -CARD_H / 2 + 0.3, -0.05]} fontSize={0.118} lineHeight={1.75} maxWidth={textW} anchorX="left" anchorY="bottom" color={palette.muted}>
-                {panel.lines.join("\n")}
-              </Text>
-            </Suspense>
-          </MeshPortalMaterial>
+          {!lite && (
+            <MeshPortalMaterial
+              ref={(material) => {
+                portal.current = material as unknown as { blend: number } | null;
+              }}
+              blur={0}
+              resolution={256}
+            >
+              <ambientLight intensity={1.4} />
+              <directionalLight position={[3, 4, 5]} intensity={2.2} />
+              <pointLight position={[-2, -1, 1]} intensity={12} color={panel.tint} />
+              <mesh position-z={-9} material={world}>
+                <planeGeometry args={[60, 60]} />
+              </mesh>
+              <Shapes shape={panel.shape} tint={panel.tint} hover={spring.hover} still={reducedMotion} />
+              {text(false)}
+            </MeshPortalMaterial>
+          )}
         </mesh>
+        {lite && text(true)}
       </animated.group>
     </group>
   );

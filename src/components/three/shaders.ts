@@ -71,6 +71,22 @@ export const worldFragment = /* glsl */ `
 `;
 
 /**
+ * Lite card face (no portal, no noise): the base colour with the section tint
+ * rising from one corner, a little stronger on hover.
+ */
+export const flatFragment = /* glsl */ `
+  uniform float uHover;
+  uniform vec3 uBase;
+  uniform vec3 uTint;
+  varying vec2 vUv;
+  void main() {
+    float amount = smoothstep(0.1, 1.5, vUv.x + (1.0 - vUv.y)) * (0.34 + 0.12 * uHover);
+    gl_FragColor = vec4(mix(uBase, uTint, amount), 1.0);
+    ${output}
+  }
+`;
+
+/**
  * Card outline and glow, drawn on a plane a little larger than the card. The
  * outline is always there; on hover a noisy band of light runs around it.
  */
@@ -94,7 +110,11 @@ export const haloFragment = /* glsl */ `
     float line = 1.0 - smoothstep(0.0, 0.014, abs(d));
     float outside = step(0.0, d);
     float angle = atan(p.y, p.x);
+    #ifdef LITE
+    float flow = 0.5 + 0.5 * sin(angle * 2.0 - uTime * 2.2);
+    #else
     float flow = 0.5 + 0.5 * sin(angle * 2.0 - uTime * 2.2 + fbm(p * 2.5 + uTime * 0.4) * 5.0);
+    #endif
     // Fades to nothing before the edge of the plane, so the glow never shows a square cut.
     float reach = min(uSize.x - uCard.x, uSize.y - uCard.y) * 0.5;
     float glow = exp(-d * mix(16.0, 7.0, uHover)) * outside * (1.0 - smoothstep(reach * 0.45, reach * 0.95, d));
