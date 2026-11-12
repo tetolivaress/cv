@@ -84,6 +84,14 @@ test("in 3D the whole page is in the ring: hero, stack evolution and contact too
   await expect(stage.getByRole("button", { name: "Go to Stack evolution" })).toHaveAttribute("aria-current", "location");
   await page.mouse.wheel(0, 720);
   await expect(stage.getByRole("button", { name: "Go to About" })).toHaveAttribute("aria-current", "location");
+  // The browser animates a wheel scroll: wait for it to end, or it carries on over the next jump and undoes it.
+  await page.waitForFunction(
+    () =>
+      new Promise<boolean>((resolve) => {
+        const y = window.scrollY;
+        setTimeout(() => resolve(window.scrollY === y), 150);
+      }),
+  );
   // Arrow keys step one card at a time.
   await page.keyboard.press("ArrowRight");
   await expect(stage.getByRole("button", { name: "Go to Experience" })).toHaveAttribute("aria-current", "location");
@@ -145,12 +153,33 @@ test.describe("Android phones", () => {
     await region.getByRole("button", { name: /^Open / }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
   });
+
+  test("can turn the portal effect on, and the choice is remembered", async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("view", "3d"));
+    await page.goto("/");
+    const toggle = page.getByRole("button", { name: "Portal effect" });
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("[data-scene]")).toHaveAttribute("data-scene", "full");
+    await expect(page.locator("main canvas")).toBeVisible();
+    await page.reload();
+    await expect(page.locator("[data-scene]")).toHaveAttribute("data-scene", "full");
+  });
 });
 
 test("everything else gets the full scene with portals", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("view", "3d"));
   await page.goto("/");
   await expect(page.locator("[data-scene]")).toHaveAttribute("data-scene", "full");
+  // The portal effect can be switched off anywhere, and the resolution follows the frame rate (slow here: software GL).
+  const toggle = page.getByRole("button", { name: "Portal effect" });
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await toggle.click();
+  await expect(page.locator("[data-scene]")).toHaveAttribute("data-scene", "lite");
+  await expect(page.locator("main canvas")).toBeVisible();
+  await expect(page.locator("[data-dpr]")).toHaveAttribute("data-dpr", "0.75", { timeout: 30_000 });
+  await page.screenshot({ path: "screenshots/view3d-portals-off.png" });
 });
 
 test("project pages have no view switch", async ({ page }) => {

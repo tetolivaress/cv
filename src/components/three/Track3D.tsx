@@ -1,13 +1,13 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowRight, MoveVertical, X } from "lucide-react";
+import { ArrowRight, Layers, MoveVertical, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { t } from "@/content/format";
 import { cn } from "@/lib/cn";
 import { pushPath, scrollToSection, sectionIdFromPath, TOP } from "@/lib/section-nav";
 import { getTheme, subscribeTheme, type Theme } from "@/lib/theme";
-import { SECTIONS_EVENT, takePendingSection } from "@/lib/view-mode";
+import { getPortals, SECTIONS_EVENT, setPortals, subscribePortals, takePendingSection } from "@/lib/view-mode";
 import { useSite } from "../site/SiteProvider";
 import { button, eyebrow } from "../ui";
 import Scene3D, { type Palette } from "./Scene3D";
@@ -23,9 +23,6 @@ const subscribeReducedMotion = (callback: () => void) => {
   media.addEventListener("change", callback);
   return () => media.removeEventListener("change", callback);
 };
-/** Android phones (their browsers say "Android … Mobile"; tablets leave "Mobile" out) get the lite scene. */
-const subscribeNever = () => () => {};
-const getLite = () => /Android/i.test(navigator.userAgent) && /Mobile/i.test(navigator.userAgent);
 const getReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 interface Props {
@@ -56,7 +53,8 @@ export default function Track3D({ panels, sections }: Props) {
   const [footerOut, setFooterOut] = useState(false);
   const theme = useSyncExternalStore(subscribeTheme, getTheme, () => "light" as Theme);
   const reducedMotion = useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => false);
-  const lite = useSyncExternalStore(subscribeNever, getLite, () => false);
+  const portals = useSyncExternalStore(subscribePortals, getPortals, () => true);
+  const lite = !portals;
 
   // Scroll position → position in cards.
   useEffect(() => {
@@ -173,14 +171,15 @@ export default function Track3D({ panels, sections }: Props) {
       if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
       const target = event.target as HTMLElement | null;
       if (target?.closest("input, textarea, select, [contenteditable], [role='dialog'], [role='menu']")) return;
-      const next = active + (event.key === "ArrowRight" ? 1 : -1);
+      // From the scroll position, not the `active` state: a key that arrives before React has re-run this effect would step from the previous card.
+      const next = Math.round(progress.current) + (event.key === "ArrowRight" ? 1 : -1);
       if (next < 0 || next >= count) return;
       event.preventDefault();
       goTo(next);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [active, count, goTo, open]);
+  }, [count, goTo, open]);
 
   const current = panels[active];
   const opened = open === null ? null : panels[open];
@@ -201,7 +200,9 @@ export default function Track3D({ panels, sections }: Props) {
         {/* The plain hero (and its h1) is hidden in this view. */}
         <h1 className="sr-only">{person.name}</h1>
         <div className="absolute inset-0" data-scene={lite ? "lite" : "full"}>
+          {/* Keyed: antialiasing is fixed when the WebGL context is created, so the two scenes each get their own. */}
           <Scene3D
+            key={lite ? "lite" : "full"}
             panels={panels}
             progress={progress}
             active={active}
@@ -262,6 +263,21 @@ export default function Track3D({ panels, sections }: Props) {
             ))}
           </ul>
         </nav>
+
+        <button
+          type="button"
+          aria-pressed={portals}
+          title={ui.view3dPortalsHint}
+          onClick={() => setPortals(!portals)}
+          className={cn(
+            "absolute left-3 top-3 flex h-11 items-center gap-2 rounded-full px-3.5 font-mono text-xs font-semibold ring-1 ring-inset ring-line transition-colors duration-200 md:left-6",
+            portals ? "bg-surface-2 text-fg" : "bg-surface text-fg-3 hover:text-fg",
+          )}
+        >
+          <Layers size={16} aria-hidden="true" />
+          <span className="max-md:sr-only">{ui.view3dPortals}</span>
+          <span aria-hidden="true" className={cn("size-2 rounded-full transition-colors duration-200", portals ? "bg-accent-strong" : "bg-line-strong")} />
+        </button>
 
         <p
           aria-hidden="true"

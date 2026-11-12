@@ -1,7 +1,7 @@
 "use client";
 
 import { animated, useSpring } from "@react-spring/three";
-import { Float, MeshDistortMaterial, MeshPortalMaterial, Text, useCursor } from "@react-three/drei";
+import { Float, MeshDistortMaterial, MeshPortalMaterial, PerformanceMonitor, Text, useCursor } from "@react-three/drei";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
@@ -34,19 +34,34 @@ interface SceneProps {
   reducedMotion: boolean;
   /** Stop rendering while the stage is off screen. */
   paused: boolean;
-  /** Low-power devices (Android phones): flat cards with no portal, no floating shapes and no noise in the shaders. */
+  /** Portal effect off (the default on Android phones): flat cards with no portal, no floating shapes and no noise in the shaders. */
   lite: boolean;
   onSelect: (index: number) => void;
   onOpen: (index: number) => void;
 }
 
 /** The WebGL part of the 3D view: a ring of portal cards that turns with the page scroll. */
+/**
+ * Render quality for a performance factor (0 = struggling, 1 = frames to spare): the canvas pixel ratio and the size
+ * of each portal's render target. The lite scene has no portals and a lower ceiling.
+ */
+function qualityFor(factor: number, lite: boolean) {
+  const max = Math.min(typeof window === "undefined" ? 1 : window.devicePixelRatio || 1, lite ? 1.25 : 1.5);
+  const min = Math.min(0.75, max);
+  return { dpr: Math.round((min + (max - min) * factor) * 20) / 20, portal: factor < 0.3 ? 128 : factor < 0.7 ? 256 : 512 };
+}
+
 export default function Scene3D({ paused, ...props }: SceneProps) {
   const { lite } = props;
+  // Starts in the middle and follows the measured frame rate: drei's monitor raises the factor while the device keeps
+  // up and lowers it while frames drop. A device that keeps flip-flopping settles on the lowest quality.
+  const [factor, setFactor] = useState(0.5);
+  const quality = qualityFor(factor, lite);
   return (
     <Canvas
       flat
-      dpr={lite ? 1 : [1, 1.5]}
+      dpr={quality.dpr}
+      data-dpr={quality.dpr}
       frameloop={paused ? "never" : "always"}
       camera={{ fov: FOV, position: [0, 0, 10], near: 0.1, far: 100 }}
       gl={{ alpha: true, antialias: !lite, powerPreference: "high-performance" }}
@@ -54,8 +69,9 @@ export default function Scene3D({ paused, ...props }: SceneProps) {
     >
       {/* Anything that suspends in here (a card's text waiting for its font) must stop at this boundary: left to bubble,
           it suspends the page around the canvas, which hides the whole track for a moment and loses the scroll position. */}
+      <PerformanceMonitor factor={0.5} flipflops={4} onChange={({ factor }) => setFactor(factor)} onFallback={() => setFactor(0)} />
       <Suspense fallback={null}>
-        <Ring {...props} />
+        <Ring {...props} portalResolution={quality.portal} />
       </Suspense>
     </Canvas>
   );
@@ -73,7 +89,7 @@ function useLayout() {
   }, [size.width, size.height]);
 }
 
-function Ring({ panels, progress, active, open, palette, reducedMotion, lite, onSelect, onOpen }: Omit<SceneProps, "paused">) {
+function Ring({ panels, progress, active, open, palette, reducedMotion, lite, portalResolution, onSelect, onOpen }: Omit<SceneProps, "paused"> & { portalResolution: number }) {
   const count = panels.length;
   const step = (Math.PI * 2) / count;
   // Cards meet edge to edge at CARD_W / (2 tan(π/n)); the extra leaves a gap between them.
@@ -113,6 +129,7 @@ function Ring({ panels, progress, active, open, palette, reducedMotion, lite, on
             palette={palette}
             reducedMotion={reducedMotion}
             lite={lite}
+            portalResolution={portalResolution}
             onClick={() => (active === i ? onOpen(i) : onSelect(i))}
           />
         ))}
@@ -152,10 +169,11 @@ interface CardProps {
   palette: Palette;
   reducedMotion: boolean;
   lite: boolean;
+  portalResolution: number;
   onClick: () => void;
 }
 
-function Card({ panel, angle, radius, ringRotation, active, open, palette, reducedMotion, lite, onClick }: CardProps) {
+function Card({ panel, angle, radius, ringRotation, active, open, palette, reducedMotion, lite, portalResolution, onClick }: CardProps) {
   const [hovered, setHovered] = useState(false);
   useCursor(hovered);
   const group = useRef<THREE.Group>(null);
@@ -297,7 +315,7 @@ function Card({ panel, angle, radius, ringRotation, active, open, palette, reduc
                 portal.current = material as unknown as { blend: number } | null;
               }}
               blur={0}
-              resolution={256}
+              resolution={portalResolution}
             >
               <ambientLight intensity={1.4} />
               <directionalLight position={[3, 4, 5]} intensity={2.2} />

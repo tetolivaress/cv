@@ -37,6 +37,37 @@ export function subscribeViewMode(callback: () => void) {
   return () => window.removeEventListener(EVENT, callback);
 }
 
+export const PORTALS_STORAGE_KEY = "portals";
+const PORTALS_EVENT = "portalschange";
+
+/**
+ * Whether the 3D cards are portals into their own little worlds (the heavy effect) or flat cards. A saved choice wins;
+ * without one, Android phones start flat (their browsers say "Android … Mobile"; tablets leave "Mobile" out).
+ */
+export function getPortals(): boolean {
+  try {
+    const saved = localStorage.getItem(PORTALS_STORAGE_KEY);
+    if (saved === "on" || saved === "off") return saved === "on";
+  } catch {
+    // Storage blocked: fall through to the default.
+  }
+  return !(/Android/i.test(navigator.userAgent) && /Mobile/i.test(navigator.userAgent));
+}
+
+export function setPortals(on: boolean) {
+  try {
+    localStorage.setItem(PORTALS_STORAGE_KEY, on ? "on" : "off");
+  } catch {
+    // The choice still applies for this visit through the listeners' own state.
+  }
+  window.dispatchEvent(new Event(PORTALS_EVENT));
+}
+
+export function subscribePortals(callback: () => void) {
+  window.addEventListener(PORTALS_EVENT, callback);
+  return () => window.removeEventListener(PORTALS_EVENT, callback);
+}
+
 export function supportsWebGL(): boolean {
   try {
     const canvas = document.createElement("canvas");
