@@ -165,9 +165,9 @@ function build(locale: Locale) {
     const label = `projects[${i}] ${project.name}`;
     const videos: Video[] = [];
     project.videos.forEach((video, v) => {
-      const id = plain(video.youtubeId);
-      if (!id) return warnings.add(`${label}: videos[${v}].youtubeId`, false);
-      videos.push({ youtubeId: id, duration: plain(video.duration), title: text(video.title, `${label}: videos[${v}].title`) ?? project.name });
+      const id = text(video.youtubeId, `${label}: videos[${v}].youtubeId`);
+      if (!id) return;
+      videos.push({ youtubeId: id, duration: text(video.duration, `${label}: videos[${v}].duration`, false), poster: text(video.poster, `${label}: videos[${v}].poster`, false), title: text(video.title, `${label}: videos[${v}].title`) ?? project.name });
     });
     const step = (s: { title: L<string>; text: L<string> } | undefined, name: string) =>
       s ? { title: text(s.title, `${label}: story.${name}.title`) ?? "", text: text(s.text, `${label}: story.${name}.text`) ?? "" } : undefined;

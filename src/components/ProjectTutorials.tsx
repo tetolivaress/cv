@@ -71,10 +71,10 @@ export function ProjectTutorials({ project }: { project: Project }) {
                     >
                       <span className="relative flex h-[68px] w-[120px] shrink-0 items-end justify-end overflow-hidden rounded-lg bg-surface-2 p-1.5 md:h-[72px] md:w-32">
                         <Image
-                          src={`https://i.ytimg.com/vi/${encodeURIComponent(item.youtubeId)}/mqdefault.jpg`}
+                          src={item.poster ?? `https://i.ytimg.com/vi/${encodeURIComponent(item.youtubeId)}/mqdefault.jpg`}
                           alt=""
                           fill
-                          unoptimized
+                          unoptimized={!item.poster}
                           sizes="128px"
                           className="object-cover"
                         />

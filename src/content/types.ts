@@ -99,8 +99,11 @@ export interface RawExperience {
 
 export interface RawVideo {
   title: L<string>;
-  youtubeId: string;
-  duration?: string;
+  /** One id for every language, or one upload per language. */
+  youtubeId: L<string>;
+  duration?: L<string>;
+  /** Local 16:9 image shown before playing; without it the YouTube thumbnail is used. */
+  poster?: L<string>;
 }
 
 export interface RawProjectImage {
@@ -212,6 +215,7 @@ export interface Video {
   title: string;
   youtubeId: string;
   duration?: string;
+  poster?: string;
 }
 
 export interface ProjectImage {

@@ -58,10 +58,10 @@ export function VideoEmbed({ video, avatar, autoplay = false }: Props) {
           className="group absolute inset-0 flex flex-col justify-between p-3 text-left md:p-5"
         >
           <Image
-            src={`https://i.ytimg.com/vi/${encodeURIComponent(video.youtubeId)}/hqdefault.jpg`}
+            src={video.poster ?? `https://i.ytimg.com/vi/${encodeURIComponent(video.youtubeId)}/hqdefault.jpg`}
             alt=""
             fill
-            unoptimized
+            unoptimized={!video.poster}
             sizes="(min-width: 1024px) 768px, 100vw"
             className="object-cover"
           />

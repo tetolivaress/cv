@@ -285,8 +285,8 @@ export const experience: RawExperience[] = [
 ];
 
 /**
- * Projects, in display order. Covers are placeholders from the Pencil design:
- * replace /public/projects/<slug>/cover.png with real screenshots.
+ * Projects, in display order. Covers and gallery images are real screenshots taken by each product's
+ * tutorial pipeline; videos are the YouTube tutorial and launch video, one upload per language.
  * Summaries/stacks marked "drafted" came from ~/personal/CLAUDE.md, please review.
  */
 export const projects: RawProject[] = [
@@ -302,8 +302,27 @@ export const projects: RawProject[] = [
     // drafted from the caribito.com repo
     stack: ["Next.js", "NestJS", "PostgreSQL", "TanStack Query", "Playwright"],
     cover: "/projects/caribito/cover.png",
-    videos: [{ title: "TODO", youtubeId: "TODO" }],
-    images: [],
+    videos: [
+      {
+        title: { en: "How to Book Trips in Venezuela (and Sell Your Tours) | Caribito Tutorial", es: "Cómo reservar viajes por Venezuela (y vender tus tours) | Tutorial de Caribito" },
+        youtubeId: { en: "y3rZIvl8fmo", es: "t-lowrHejK8" },
+        duration: { en: "4:41", es: "4:58" },
+        poster: { en: "/projects/caribito/video-tutorial-en.jpg", es: "/projects/caribito/video-tutorial-es.jpg" },
+      },
+      {
+        title: { en: "Caribito: Trips Across Venezuela with Verified Operators | Launch", es: "Caribito: viajes por Venezuela con operadores verificados | Lanzamiento" },
+        youtubeId: { en: "RdohvEu9uTY", es: "en2FJEM31m0" },
+        duration: { en: "0:30", es: "0:30" },
+        poster: { en: "/projects/caribito/video-launch-en.jpg", es: "/projects/caribito/video-launch-es.jpg" },
+      },
+    ],
+    images: [
+      { src: "/projects/caribito/01-results-traveler.png", alt: { en: "Search results with filters", es: "Resultados de búsqueda con filtros" } },
+      { src: "/projects/caribito/02-itinerary-traveler.png", alt: { en: "Day-by-day itinerary and departures", es: "Itinerario día a día y salidas" } },
+      { src: "/projects/caribito/03-panel-operator.png", alt: { en: "Operator dashboard", es: "Panel del operador" } },
+      { src: "/projects/caribito/04-leads-operator.png", alt: { en: "WhatsApp leads", es: "Leads de WhatsApp" } },
+      { src: "/projects/caribito/05-profile-business.png", alt: { en: "Public operator profile", es: "Perfil público del operador" } },
+    ],
   },
   {
     slug: "tutrainer",
@@ -316,8 +335,27 @@ export const projects: RawProject[] = [
     role: { en: "Founder · full-stack developer", es: "Fundador · desarrollador full-stack" },
     stack: ["Next.js", "NestJS", "TypeScript"],
     cover: "/projects/tutrainer/cover.png",
-    videos: [{ title: "TODO", youtubeId: "TODO" }],
-    images: [],
+    videos: [
+      {
+        title: { en: "Personal Trainer App: Plan, Log and Track Every Client | TuTrainer Tutorial", es: "App para entrenadores personales: planifica y registra a cada alumno | Tutorial de TuTrainer" },
+        youtubeId: { en: "furvWQ-jHII", es: "g72FY1DoWDs" },
+        duration: { en: "5:17", es: "5:36" },
+        poster: { en: "/projects/tutrainer/video-tutorial-en.jpg", es: "/projects/tutrainer/video-tutorial-es.jpg" },
+      },
+      {
+        title: { en: "TuTrainer: Every Client. Every Session. | Launch", es: "TuTrainer: cada alumno, cada sesión | Lanzamiento" },
+        youtubeId: { en: "jQBUVQ-X-kw", es: "ZcWQ4vrNabI" },
+        duration: { en: "0:30", es: "0:30" },
+        poster: { en: "/projects/tutrainer/video-launch-en.jpg", es: "/projects/tutrainer/video-launch-es.jpg" },
+      },
+    ],
+    images: [
+      { src: "/projects/tutrainer/01-trainer-builder-trainer.png", alt: { en: "Routine builder", es: "Constructor de rutinas" } },
+      { src: "/projects/tutrainer/02-trainer-profile-plan-trainer.png", alt: { en: "Client profile with the weekly plan", es: "Perfil del alumno con el plan semanal" } },
+      { src: "/projects/tutrainer/03-trainee-progress-trainee.png", alt: { en: "Client progress and metrics", es: "Progreso y métricas del alumno" } },
+      { src: "/projects/tutrainer/04-trainee-home-trainee.png", alt: { en: "Client home with today's workout", es: "Inicio del alumno con el entreno de hoy" } },
+      { src: "/projects/tutrainer/05-trainer-thread-send-trainer.png", alt: { en: "Messages between trainer and client", es: "Mensajes entre entrenador y alumno" } },
+    ],
   },
   {
     slug: "daniela-cucine",
@@ -331,8 +369,27 @@ export const projects: RawProject[] = [
     role: "TODO",
     stack: ["Next.js", "Prisma", "PostgreSQL"],
     cover: "/projects/daniela-cucine/cover.png",
-    videos: [],
-    images: [],
+    videos: [
+      {
+        title: { en: "Design Custom Furniture in 3D Online | Danielacucine Tutorial", es: "Diseña muebles a medida en 3D | Tutorial de Danielacucine" },
+        youtubeId: { en: "gop1j1HOuT8", es: "IE5ikyllNwc" },
+        duration: { en: "4:24", es: "4:09" },
+        poster: { en: "/projects/daniela-cucine/video-tutorial-en.jpg", es: "/projects/daniela-cucine/video-tutorial-es.jpg" },
+      },
+      {
+        title: { en: "Danielacucine: Solid Wood Furniture, Made by Hand | Launch", es: "Danielacucine: muebles de madera maciza hechos a mano | Lanzamiento" },
+        youtubeId: { en: "huuyy1-7xuc", es: "m2y7jAgRDB8" },
+        duration: { en: "0:30", es: "0:30" },
+        poster: { en: "/projects/daniela-cucine/video-launch-en.jpg", es: "/projects/daniela-cucine/video-launch-es.jpg" },
+      },
+    ],
+    images: [
+      { src: "/projects/daniela-cucine/01-bed-visitor.png", alt: { en: "Product page", es: "Página de producto" } },
+      { src: "/projects/daniela-cucine/02-creator-3d-design.png", alt: { en: "3D closet designer", es: "Creador 3D de clósets" } },
+      { src: "/projects/daniela-cucine/03-casa-arrange-design.png", alt: { en: "Pieces arranged together in 3D", es: "Piezas combinadas en 3D" } },
+      { src: "/projects/daniela-cucine/04-gallery-visitor.png", alt: { en: "3D gallery", es: "Galería 3D" } },
+      { src: "/projects/daniela-cucine/05-panel-workshop.png", alt: { en: "Workshop admin panel", es: "Panel de administración del taller" } },
+    ],
   },
   {
     slug: "zivave",
@@ -346,8 +403,27 @@ export const projects: RawProject[] = [
     role: "TODO",
     stack: ["Next.js", "Prisma", "PostgreSQL", "Better Auth"],
     cover: "/projects/zivave/cover.png",
-    videos: [],
-    images: [],
+    videos: [
+      {
+        title: { en: "Shop Signature Accessories and Order on WhatsApp | Ziva Tutorial", es: "Compra accesorios de autor y pide por WhatsApp | Tutorial de Ziva" },
+        youtubeId: { en: "kDYS3bcZ8BQ", es: "6CFUdxtxdls" },
+        duration: { en: "4:13", es: "4:06" },
+        poster: { en: "/projects/zivave/video-tutorial-en.jpg", es: "/projects/zivave/video-tutorial-es.jpg" },
+      },
+      {
+        title: { en: "Ziva: The House of Fine Accessories | Launch", es: "Ziva: la casa del accesorio | Lanzamiento" },
+        youtubeId: { en: "yZHpVz_bT5M", es: "97JmoH-cB-o" },
+        duration: { en: "0:30", es: "0:30" },
+        poster: { en: "/projects/zivave/video-launch-en.jpg", es: "/projects/zivave/video-launch-es.jpg" },
+      },
+    ],
+    images: [
+      { src: "/projects/zivave/01-listing-discover.png", alt: { en: "Catalog with filters", es: "Catálogo con filtros" } },
+      { src: "/projects/zivave/02-product-discover.png", alt: { en: "Product page", es: "Página de producto" } },
+      { src: "/projects/zivave/03-bag-order.png", alt: { en: "Bag with the customer discount", es: "Bolsa con el descuento de cliente" } },
+      { src: "/projects/zivave/04-journal-discover.png", alt: { en: "Blog", es: "Blog" } },
+      { src: "/projects/zivave/05-products-store.png", alt: { en: "Admin panel: products", es: "Panel de administración: productos" } },
+    ],
   },
   {
     slug: "reactool",
@@ -361,8 +437,25 @@ export const projects: RawProject[] = [
     role: "TODO",
     stack: ["React"],
     cover: "/projects/reactool/cover.png",
-    videos: [],
-    images: [],
+    videos: [
+      {
+        title: { en: "Free File Tools That Never Upload Your Files | Reactool Tutorial", es: "Herramientas gratis para tus archivos, sin subirlos | Tutorial de Reactool" },
+        youtubeId: { en: "Uzt8ctfViKs", es: "7AmRaClsDt8" },
+        duration: { en: "4:28", es: "4:31" },
+        poster: { en: "/projects/reactool/video-tutorial-en.jpg", es: "/projects/reactool/video-tutorial-es.jpg" },
+      },
+      {
+        title: { en: "Reactool: Edit Any File. Upload Nothing. | Launch", es: "Reactool: edita cualquier archivo sin subir nada | Lanzamiento" },
+        youtubeId: { en: "2LBUt1Zf4K0", es: "zg9SY_0w-ng" },
+        duration: { en: "0:30", es: "0:30" },
+        poster: { en: "/projects/reactool/video-launch-en.jpg", es: "/projects/reactool/video-launch-es.jpg" },
+      },
+    ],
+    images: [
+      { src: "/projects/reactool/01-en-image-compress.png", alt: { en: "Image compressor", es: "Compresor de imágenes" } },
+      { src: "/projects/reactool/02-en-privacy-encrypt.png", alt: { en: "File encryption", es: "Cifrado de archivos" } },
+      { src: "/projects/reactool/03-en-productivity-pomodoro.png", alt: { en: "Pomodoro timer", es: "Temporizador Pomodoro" } },
+    ],
   },
 ];
 
