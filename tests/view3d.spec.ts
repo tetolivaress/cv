@@ -172,13 +172,15 @@ test("everything else gets the full scene with portals", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("view", "3d"));
   await page.goto("/");
   await expect(page.locator("[data-scene]")).toHaveAttribute("data-scene", "full");
-  // The portal effect can be switched off anywhere, and the resolution follows the frame rate (slow here: software GL).
+  // The portal effect can be switched off anywhere.
   const toggle = page.getByRole("button", { name: "Portal effect" });
   await expect(toggle).toHaveAttribute("aria-pressed", "true");
   await toggle.click();
   await expect(page.locator("[data-scene]")).toHaveAttribute("data-scene", "lite");
   await expect(page.locator("main canvas")).toBeVisible();
-  await expect(page.locator("[data-dpr]")).toHaveAttribute("data-dpr", "0.75", { timeout: 30_000 });
+  // The canvas is drawn at the screen's pixel ratio, never below it (a lower one blurred the cards).
+  const canvas = page.locator("main canvas");
+  expect(await canvas.evaluate((el: HTMLCanvasElement) => el.width / el.clientWidth)).toBeGreaterThanOrEqual(1);
   await page.screenshot({ path: "screenshots/view3d-portals-off.png" });
 });
 
